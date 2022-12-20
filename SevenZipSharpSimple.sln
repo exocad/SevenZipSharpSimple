@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4BA2E925-C1F0-4A75-B45A-0120E555E286}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".root", ".root", "{2FFF78F1-D3D3-4985-90F3-215CA5889969}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		Directory.Build.props = Directory.Build.props
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{02C96461-4756-42AB-9BFE-67C7F84B68AA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SevenZipTests", "test\SevenZipTests\SevenZipTests.csproj", "{190225BF-6E25-44DC-AC54-CBD493538066}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SevenZipBenchmarks", "test\SevenZipBenchmarks\SevenZipBenchmarks.csproj", "{DB99C10C-F6CF-4827-8601-982786D4E366}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SevenZipSharpSimple", "src\SevenZipSharpSimple\SevenZipSharpSimple.csproj", "{41C64043-310A-494E-9A0F-C2C3EF087515}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{190225BF-6E25-44DC-AC54-CBD493538066}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{190225BF-6E25-44DC-AC54-CBD493538066}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{190225BF-6E25-44DC-AC54-CBD493538066}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{190225BF-6E25-44DC-AC54-CBD493538066}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB99C10C-F6CF-4827-8601-982786D4E366}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB99C10C-F6CF-4827-8601-982786D4E366}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB99C10C-F6CF-4827-8601-982786D4E366}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB99C10C-F6CF-4827-8601-982786D4E366}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41C64043-310A-494E-9A0F-C2C3EF087515}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41C64043-310A-494E-9A0F-C2C3EF087515}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41C64043-310A-494E-9A0F-C2C3EF087515}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41C64043-310A-494E-9A0F-C2C3EF087515}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{190225BF-6E25-44DC-AC54-CBD493538066} = {02C96461-4756-42AB-9BFE-67C7F84B68AA}
+		{DB99C10C-F6CF-4827-8601-982786D4E366} = {02C96461-4756-42AB-9BFE-67C7F84B68AA}
+		{41C64043-310A-494E-9A0F-C2C3EF087515} = {4BA2E925-C1F0-4A75-B45A-0120E555E286}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {965DA08E-2D75-484F-99ED-6BC4A7C1E50F}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <SevenZipSharpSimple_KeyFilePath>$(SolutionDir)..\DentalCAD\snk\DentalConfigKeyPublicPrivate.snk</SevenZipSharpSimple_KeyFilePath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="Exists('$(SevenZipSharpSimple_KeyFilePath)')">
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(SevenZipSharpSimple_KeyFilePath)</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <Target Name="Notification" AfterTargets="PreBuildEvent">
+    <Message Text="Building a signed assembly." Importance="high" Condition="Exists('$(SevenZipSharpSimple_KeyFilePath)')"/>
+    <Message Text="Building an unsigned assembly." Importance="high" Condition="!Exists('$(SevenZipSharpSimple_KeyFilePath)')"/>
+  </Target>
+</Project>
