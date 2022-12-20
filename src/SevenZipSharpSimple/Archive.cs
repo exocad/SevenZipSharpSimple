@@ -3,8 +3,21 @@ using SevenZipSharpSimple.Compression.LZMA;
 
 namespace SevenZipSharpSimple
 {
+    /// <summary>
+    /// The <see cref="Archive"/> class provides a set of static methods to easily compress or decompress
+    /// binary data.
+    /// </summary>
     public sealed class Archive
     {
+        /// <summary>
+        /// Compresses the content of the <paramref name="source"/> stream and writes the compressed
+        /// data to the <paramref name="target"/> stream.
+        /// </summary>
+        /// <param name="source">The stream containing the data to compress.</param>
+        /// <param name="target">The stream to write the compressed data to.</param>
+        /// <param name="progress">An option instance of the <see cref="ICodeProgress"/> interface
+        /// which can be used to receive progress updates during compression.</param>
+        /// <returns>The size of the compressed stream.</returns>
         public static long Compress(Stream source, Stream target, ICodeProgress progress = null)
         {
             var position = target.Position;
@@ -18,6 +31,14 @@ namespace SevenZipSharpSimple
             return target.Position - position;
         }
 
+        /// <summary>
+        /// Compresses the given <paramref name="content"/> and returns a new array containing
+        /// the compressed data.
+        /// </summary>
+        /// <param name="content">The buffer containing the data to compress.</param>
+        /// <param name="progress">An option instance of the <see cref="ICodeProgress"/> interface
+        /// which can be used to receive progress updates during compression.</param>
+        /// <returns>An array containing the compressed data.</returns>
         public static byte[] Compress(byte[] content, ICodeProgress progress = null)
         {
             using (var source = new MemoryStream(content))
@@ -28,6 +49,14 @@ namespace SevenZipSharpSimple
             }
         }
 
+        /// <summary>
+        /// Decompresses the data from the given <paramref name="source"/> stream and writes it to the
+        /// <paramref name="target"/> stream.
+        /// </summary>
+        /// <param name="source">The stream providing the compressed data.</param>
+        /// <param name="target">The stream to write the decompressed data to.</param>
+        /// <param name="progress">An option instance of the <see cref="ICodeProgress"/> interface
+        /// which can be used to receive progress updates during compression.</param>
         public static void Decompress(Stream source, Stream target, ICodeProgress progress = null)
         {
             var decoder = new Decoder();
@@ -38,10 +67,18 @@ namespace SevenZipSharpSimple
             decoder.Code(source, target, source.Length - source.Position, length, progress);
         }
 
+        /// <summary>
+        /// Decompresses the contents of the <paramref name="compressed"/> array and returns a new array
+        /// containing the decompressed data.
+        /// </summary>
+        /// <param name="compressed">The array containing the compressed data.</param>
+        /// <param name="progress">An option instance of the <see cref="ICodeProgress"/> interface
+        /// which can be used to receive progress updates during compression.</param>
+        /// <returns>An array containing the decompressed data.</returns>
         public static byte[] Decompress(byte[] compressed, ICodeProgress progress = null)
         {
             using (var source = new MemoryStream(compressed))
-            using (var target = new MemoryStream(capacity: compressed.Length * 2))
+            using (var target = new MemoryStream())
             {
                 Decompress(source, target, progress);
                 return target.ToArray();
