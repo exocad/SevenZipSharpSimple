@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "SevenZipConsole": {
+      "commandName": "Project",
+      "commandLineArgs": "--archive \"T:\\github.com\\exocad\\SevenZipSharpSimple\\test\\test-data\\archive.zip\"\r\n--target \"T:\\Unzipp\"",
+      "nativeDebugging": true
+    }
+  }
+}
