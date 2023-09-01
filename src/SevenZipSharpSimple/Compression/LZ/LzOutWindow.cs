@@ -1,6 +1,6 @@
 namespace SevenZipSharpSimple.Compression.LZ
 {
-    public class OutWindow
+    class OutWindow
     {
         byte[] _buffer = null;
         uint _pos;

@@ -2,7 +2,7 @@ using System;
 
 namespace SevenZipSharpSimple.Compression.LZ
 {
-    public class InWindow
+    class InWindow
     {
         public Byte[] _bufferBase = null; // pointer to buffer with data
         System.IO.Stream _stream;

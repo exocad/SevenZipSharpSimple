@@ -32,7 +32,7 @@ namespace SevenZipSharpSimple
         void SetProgress(Int64 inSize, Int64 outSize);
     };
 
-    public interface ICoder
+    interface ICoder
     {
         /// <summary>
         /// Codes streams.
@@ -73,7 +73,7 @@ namespace SevenZipSharpSimple
     /// <summary>
     /// Provides the fields that represent properties idenitifiers for compressing.
     /// </summary>
-    public enum CoderPropID
+    enum CoderPropID
     {
         /// <summary>
         /// Specifies default property.
@@ -138,17 +138,17 @@ namespace SevenZipSharpSimple
     };
 
 
-    public interface ISetCoderProperties
+    interface ISetCoderProperties
     {
         void SetCoderProperties(CoderPropID[] propIDs, object[] properties);
     };
 
-    public interface IWriteCoderProperties
+    interface IWriteCoderProperties
     {
         void WriteCoderProperties(System.IO.Stream outStream);
     }
 
-    public interface ISetDecoderProperties
+    interface ISetDecoderProperties
     {
         void SetDecoderProperties(byte[] properties);
     }

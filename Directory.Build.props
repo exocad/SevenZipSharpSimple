@@ -2,8 +2,8 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
 
-    <AssemblyVersion>22.01</AssemblyVersion>
-    <ProductVersion>22.01</ProductVersion>
+    <AssemblyVersion>23.01</AssemblyVersion>
+    <ProductVersion>23.01</ProductVersion>
     <ProductName>7zip Sharp</ProductName>
     <Copyright>Copyright Igor Pavlov and exocad GmbH</Copyright>
   </PropertyGroup>

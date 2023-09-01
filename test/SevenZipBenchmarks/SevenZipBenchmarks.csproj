@@ -11,6 +11,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\..\runtimes\win\native\7z.dll" Link="7z.dll" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\test-data\archive.zip" Link="test-data\archive.zip" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\test-data\archive.7z" Link="test-data\archive.7z" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\SevenZipSharpSimple\SevenZipSharpSimple.csproj" />
   </ItemGroup>
 </Project>

@@ -1,9 +1,10 @@
 using System;
-using SevenZipSharpSimple.Compression.RangeCoder;
 
 namespace SevenZipSharpSimple.Compression.LZMA
 {
-    public class Encoder : ICoder, ISetCoderProperties, IWriteCoderProperties
+    using RangeCoder;
+
+    class Encoder : ICoder, ISetCoderProperties, IWriteCoderProperties
     {
         enum EMatchFinderType
         {
@@ -1362,15 +1363,18 @@ namespace SevenZipSharpSimple.Compression.LZMA
             return -1;
         }
 
-        public void SetCoderProperty(CoderPropID property, object value)
+        public void SetCoderProperties(CoderPropID[] propIDs, object[] properties)
         {
-                switch (property)
+            for (UInt32 i = 0; i < properties.Length; i++)
+            {
+                object prop = properties[i];
+                switch (propIDs[i])
                 {
                     case CoderPropID.NumFastBytes:
                         {
-                            if (!(value is Int32))
+                            if (!(prop is Int32))
                                 throw new InvalidParamException();
-                            Int32 numFastBytes = (Int32)value;
+                            Int32 numFastBytes = (Int32)prop;
                             if (numFastBytes < 5 || numFastBytes > Base.kMatchMaxLen)
                                 throw new InvalidParamException();
                             _numFastBytes = (UInt32)numFastBytes;
@@ -1379,9 +1383,9 @@ namespace SevenZipSharpSimple.Compression.LZMA
                     case CoderPropID.Algorithm:
                         {
                             /*
-                            if (!(value is Int32))
+                            if (!(prop is Int32))
                                 throw new InvalidParamException();
-                            Int32 maximize = (Int32)value;
+                            Int32 maximize = (Int32)prop;
                             _fastMode = (maximize == 0);
                             _maxMode = (maximize >= 2);
                             */
@@ -1389,12 +1393,13 @@ namespace SevenZipSharpSimple.Compression.LZMA
                         }
                     case CoderPropID.MatchFinder:
                         {
-                            if (!(value is String))
+                            if (!(prop is String))
                                 throw new InvalidParamException();
                             EMatchFinderType matchFinderIndexPrev = _matchFinderType;
-                            int m = FindMatchFinder(((string)value).ToUpper());
+                            int m = FindMatchFinder(((string)prop).ToUpper());
                             if (m < 0)
                                 throw new InvalidParamException();
+
                             _matchFinderType = (EMatchFinderType)m;
                             if (_matchFinder != null && matchFinderIndexPrev != _matchFinderType)
                             {
@@ -1406,9 +1411,9 @@ namespace SevenZipSharpSimple.Compression.LZMA
                     case CoderPropID.DictionarySize:
                         {
                             const int kDicLogSizeMaxCompress = 30;
-                            if (!(value is Int32))
+                            if (!(prop is Int32))
                                 throw new InvalidParamException(); ;
-                            Int32 dictionarySize = (Int32)value;
+                            Int32 dictionarySize = (Int32)prop;
                             if (dictionarySize < (UInt32)(1 << Base.kDicLogSizeMin) ||
                                 dictionarySize > (UInt32)(1 << kDicLogSizeMaxCompress))
                                 throw new InvalidParamException();
@@ -1422,9 +1427,9 @@ namespace SevenZipSharpSimple.Compression.LZMA
                         }
                     case CoderPropID.PosStateBits:
                         {
-                            if (!(value is Int32))
+                            if (!(prop is Int32))
                                 throw new InvalidParamException();
-                            Int32 v = (Int32)value;
+                            Int32 v = (Int32)prop;
                             if (v < 0 || v > (UInt32)Base.kNumPosStatesBitsEncodingMax)
                                 throw new InvalidParamException();
                             _posStateBits = (int)v;
@@ -1433,9 +1438,9 @@ namespace SevenZipSharpSimple.Compression.LZMA
                         }
                     case CoderPropID.LitPosBits:
                         {
-                            if (!(value is Int32))
+                            if (!(prop is Int32))
                                 throw new InvalidParamException();
-                            Int32 v = (Int32)value;
+                            Int32 v = (Int32)prop;
                             if (v < 0 || v > (UInt32)Base.kNumLitPosStatesBitsEncodingMax)
                                 throw new InvalidParamException();
                             _numLiteralPosStateBits = (int)v;
@@ -1443,9 +1448,9 @@ namespace SevenZipSharpSimple.Compression.LZMA
                         }
                     case CoderPropID.LitContextBits:
                         {
-                            if (!(value is Int32))
+                            if (!(prop is Int32))
                                 throw new InvalidParamException();
-                            Int32 v = (Int32)value;
+                            Int32 v = (Int32)prop;
                             if (v < 0 || v > (UInt32)Base.kNumLitContextBitsMax)
                                 throw new InvalidParamException(); ;
                             _numLiteralContextBits = (int)v;
@@ -1453,22 +1458,14 @@ namespace SevenZipSharpSimple.Compression.LZMA
                         }
                     case CoderPropID.EndMarker:
                         {
-                            if (!(value is Boolean))
+                            if (!(prop is Boolean))
                                 throw new InvalidParamException();
-                            SetWriteEndMarkerMode((Boolean)value);
+                            SetWriteEndMarkerMode((Boolean)prop);
                             break;
                         }
                     default:
                         throw new InvalidParamException();
                 }
-
-        }
-
-        public void SetCoderProperties(CoderPropID[] ids, object[] values)
-        {
-            for (var i = 0; i < values.Length; i++)
-            {
-                SetCoderProperty(ids[i], values[i]);
             }
         }
 

@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <Target Name="Notification" AfterTargets="PreBuildEvent">
-    <Message Text="Building a signed assembly." Importance="high" Condition="Exists('$(SevenZipSharpSimple_KeyFilePath)')"/>
-    <Message Text="Building an unsigned assembly." Importance="high" Condition="!Exists('$(SevenZipSharpSimple_KeyFilePath)')"/>
+    <Message Text="Building a signed assembly." Importance="high" Condition="Exists('$(SevenZipSharpSimple_KeyFilePath)')" />
+    <Message Text="Building an unsigned assembly." Importance="high" Condition="!Exists('$(SevenZipSharpSimple_KeyFilePath)')" />
   </Target>
 </Project>
