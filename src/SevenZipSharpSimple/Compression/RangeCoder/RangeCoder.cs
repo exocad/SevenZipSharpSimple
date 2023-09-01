@@ -188,13 +188,13 @@ namespace SevenZipSharpSimple.Compression.RangeCoder
             {
                 range >>= 1;
                 /*
-                result <<= 1;
-                if (code >= range)
-                {
-                    code -= range;
-                    result |= 1;
-                }
-                */
+				result <<= 1;
+				if (code >= range)
+				{
+					code -= range;
+					result |= 1;
+				}
+				*/
                 uint t = (code - range) >> 31;
                 code -= range & (t - 1);
                 result = (result << 1) | (1 - t);

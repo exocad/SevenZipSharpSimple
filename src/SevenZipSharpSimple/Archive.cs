@@ -136,15 +136,31 @@ namespace SevenZipSharpSimple
         internal static Encoder CreateEncoderWithDefaultProperties()
         {
             var encoder = new Encoder();
-            encoder.SetCoderProperty(CoderPropID.DictionarySize, DictionarySize);
-            encoder.SetCoderProperty(CoderPropID.PosStateBits, 2);
-            encoder.SetCoderProperty(CoderPropID.LitContextBits, 3);
-            encoder.SetCoderProperty(CoderPropID.LitPosBits, 0);
-            encoder.SetCoderProperty(CoderPropID.Algorithm, 2);
-            encoder.SetCoderProperty(CoderPropID.NumFastBytes, 256);
-            encoder.SetCoderProperty(CoderPropID.MatchFinder, "bt4");
-            encoder.SetCoderProperty(CoderPropID.EndMarker, false);
+            var keys = new CoderPropID[]
+            {
+                CoderPropID.DictionarySize,
+                CoderPropID.PosStateBits,
+                CoderPropID.LitContextBits,
+                CoderPropID.LitPosBits,
+                CoderPropID.Algorithm,
+                CoderPropID.NumFastBytes,
+                CoderPropID.MatchFinder,
+                CoderPropID.EndMarker,
+            };
+            
+            var values = new object[]
+            {
+                DictionarySize,
+                2,
+                3,
+                0,
+                2,
+                256,
+                "bt4",
+                false
+            };
 
+            encoder.SetCoderProperties(keys, values);
             return encoder;
         }
 

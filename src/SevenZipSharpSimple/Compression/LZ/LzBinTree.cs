@@ -2,7 +2,7 @@ using System;
 
 namespace SevenZipSharpSimple.Compression.LZ
 {
-    public class BinTree : InWindow, IMatchFinder
+    class BinTree : InWindow, IMatchFinder
     {
         UInt32 _cyclicBufferPos;
         UInt32 _cyclicBufferSize = 0;

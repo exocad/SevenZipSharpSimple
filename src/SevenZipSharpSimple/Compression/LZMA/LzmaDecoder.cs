@@ -1,9 +1,10 @@
 using System;
-using SevenZipSharpSimple.Compression.RangeCoder;
 
 namespace SevenZipSharpSimple.Compression.LZMA
 {
-    public class Decoder : ICoder, ISetDecoderProperties // ,System.IO.Stream
+    using RangeCoder;
+
+    class Decoder : ICoder, ISetDecoderProperties // ,System.IO.Stream
     {
         class LenDecoder
         {
