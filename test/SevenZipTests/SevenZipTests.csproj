@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net48</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -16,14 +15,15 @@
 
   <ItemGroup>
     <None Include="..\..\runtimes\win\native\7z.dll" Link="7z.dll" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\test-data\archive.zip" Link="test-data\archive.zip" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="..\..\runtimes\linux\native\7z.so" Link="7z.so" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="..\test-data\archive.zip" Link="test-data\archive.zip" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\test-data\archive.7z" Link="test-data\archive.7z" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
-    <PackageReference Include="SevenZipSharp.Net45" Version="1.0.19" />
-    <PackageReference Include="xunit" Version="2.4.1" />
+		<PackageReference Include="Squid-Box.SevenZipSharp" Version="1.6.1.23" />
+		<PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

@@ -10,7 +10,10 @@ namespace SevenZipSharpSimple
     /// output streams to write extracted content to and to receive status notifications while a decompression
     /// is in progress.
     /// </summary>
-    internal sealed class ExtractContext : MarshalByRefObject, IArchiveExtractCallback, IPasswordProvider, IDisposable
+#if NET8_0_OR_GREATER
+    [System.Runtime.InteropServices.Marshalling.GeneratedComClass]
+#endif
+    internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtractCallback, IPasswordProvider, IDisposable
     {
         private readonly CurrentEntry _currentEntry = new CurrentEntry();
         private readonly IArchiveReaderDelegate _delegate;
@@ -69,7 +72,7 @@ namespace SevenZipSharpSimple
             }
         }
 
-        private IOutputStream CreateOutputStream(Stream streamBase)
+        private ISequentialOutputStream CreateOutputStream(Stream streamBase)
         {
             var leaveBaseStreamOpen = (_flags & ArchiveFlags.CleanupOutputStreams) == 0;
             var output = new ArchiveStream(streamBase, leaveBaseStreamOpen);
@@ -121,7 +124,7 @@ namespace SevenZipSharpSimple
         {
         }
 
-        int IArchiveExtractCallback.GetStream(uint index, [MarshalAs(UnmanagedType.Interface)] out IOutputStream output, ExtractOperation operation)
+        int IArchiveExtractCallback.GetStream(uint index, [MarshalAs(UnmanagedType.Interface)] out ISequentialOutputStream output, ExtractOperation operation)
         {
             EnsureNotDisposed();
             SetCurrentOperation(index, operation);
@@ -140,7 +143,7 @@ namespace SevenZipSharpSimple
                 default:
                     var baseStream = OnGetStream(index, out var result);
 
-                    output = baseStream != null ? CreateOutputStream(baseStream) : default;
+                    output = baseStream != null ? CreateOutputStream(baseStream) : default(ISequentialOutputStream);
                     return (int)result;
             }
         }

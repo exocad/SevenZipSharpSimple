@@ -1,13 +1,45 @@
 # SevenZipSharpSimple
 
-Simple 7z CSharp project using the example sources from https://7-zip.org/sdk.html
+Simple 7z project written in C# using the reference SDK sources from https://7-zip.org/sdk.html
+and some additional classes that allow accessing some native 7z library features like
+archive extraction.
 
 The declaration of the COM interfaces offered by the 7z library were made by reading the 
 original definitions from the 7z repository at https://github.com/mcmilk/7-Zip/tree/master.
 
 ## Supported Frameworks
 
-The assembly is built against .netstandard 2.0 to support both, .NET Frameworks and .NET Core.
+This library supports .NET 6.0 and .NET 8.0. The latter also run under Linux.
+
+### Linux Support
+
+The .NET 8 builds of `SevenZipSharpSimple` can run under Linux. The Linux
+library was build from the original repository at https://github.com/mcmilk/7-Zip
+by using the following commands:
+
+```bash
+git clone https://github.com/mcmilk/7-Zip.git
+cd 7-zip/CPP/7zip/Bundles/Format7zF
+make -f makefile.gcc
+```
+
+The different bundles and the formats they support are explained
+here: https://github.com/mcmilk/7-Zip/blob/master/DOC/readme.txt.
+
+### Native 7z Library
+
+The native 7z library is part of this repository, but not linked directly by the `SevenZipSharpSimple`
+project. This should be done in the executable project using this library, for example with the following
+snippet:
+
+```xml
+  <ItemGroup>
+    <None Include="..\..\runtimes\win\native\7z.dll" Link="7z.dll" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\runtimes\linux\native\7z.so" Link="7z.so" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+```
+
+A `Condition` statement may be added to include the file only for a specific platform.
 
 ## Versioning Scheme
 

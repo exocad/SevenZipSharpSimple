@@ -12,10 +12,15 @@ namespace SevenZipSharpSimple.Interop
     /// The declaration of this COM interface is taken from
     /// https://github.com/mcmilk/7-Zip/blob/826145b86107fc0a778ac673348226db180e4532/CPP/7zip/Archive/IArchive.h#L177
     /// </remarks>
-    [ComImport]
     [Guid("23170F69-40C1-278A-0000-000600100000")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface IArchiveOpenCallback
+#if NET8_0_OR_GREATER
+    [System.Runtime.InteropServices.Marshalling.GeneratedComInterface(Options = System.Runtime.InteropServices.Marshalling.ComInterfaceOptions.ManagedObjectWrapper)]
+    unsafe partial
+#else
+    [ComImport]
+#endif
+    interface IArchiveOpenCallback
     {
         /// <summary>
         /// Provides a pointer to the total number of files to extract and the archive size.

@@ -9,7 +9,14 @@ namespace SevenZipSharpSimple.Interop
     /// <remarks>
     /// https://github.com/mcmilk/7-Zip/blob/826145b86107fc0a778ac673348226db180e4532/CPP/7zip/IPassword.h#L17
     /// </remarks>
-    internal interface IPasswordProvider
+    [Guid("23170F69-40C1-278A-0000-000500100000")]
+#if NET8_0_OR_GREATER
+    [System.Runtime.InteropServices.Marshalling.GeneratedComInterface]
+    unsafe partial
+#else
+    [ComImport]
+#endif
+    interface IPasswordProvider
     {
         /// <summary>
         /// Queries the password for the current archive.

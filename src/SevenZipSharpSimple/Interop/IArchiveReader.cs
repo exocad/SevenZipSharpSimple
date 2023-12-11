@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace SevenZipSharpSimple.Interop
 {
@@ -6,10 +7,15 @@ namespace SevenZipSharpSimple.Interop
     /// The <see cref="IArchiveReader"/> is used to open an archive, read its properties and extract files.
     /// </summary>
     /// <remarks>https://github.com/mcmilk/7-Zip/blob/826145b86107fc0a778ac673348226db180e4532/CPP/7zip/Archive/IArchive.h#L316</remarks>
-    [ComImport]
     [Guid("23170F69-40C1-278A-0000-000600600000")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    internal interface IArchiveReader
+#if NET8_0_OR_GREATER
+    [System.Runtime.InteropServices.Marshalling.GeneratedComInterface]
+    unsafe partial
+#else
+    [ComImport]
+#endif
+    interface IArchiveReader
     {
         /// <summary>
         /// Opens an archive represented by the given <paramref name="stream"/>.
@@ -19,7 +25,7 @@ namespace SevenZipSharpSimple.Interop
         /// <param name="openArchiveCallback">An optional callback interface.</param>
         /// <returns>Zero, if the operation succeded.</returns>
         [PreserveSig]
-        int Open(IInputStream stream, [In] ref ulong maxCheckStartPosition, [MarshalAs(UnmanagedType.Interface)] IArchiveOpenCallback openArchiveCallback);
+        int Open(IInputStream stream, ref ulong maxCheckStartPosition, [MarshalAs(UnmanagedType.Interface)] IArchiveOpenCallback openArchiveCallback);
 
         /// <summary>
         /// Closes the currently opened stream.
@@ -61,6 +67,10 @@ namespace SevenZipSharpSimple.Interop
         /// and <see cref="Close"/>.
         /// </remarks>
         [PreserveSig]
-        int Extract([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] uint[] indices, uint length, int testMode, [MarshalAs(UnmanagedType.Interface)] IArchiveExtractCallback extractCallback);
+        int Extract(
+            [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] uint[] indices,
+            uint length,
+            int testMode,
+            [MarshalAs(UnmanagedType.Interface)] IArchiveExtractCallback extractCallback);
     }
 }

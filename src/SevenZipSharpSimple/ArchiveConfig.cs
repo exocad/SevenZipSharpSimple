@@ -1,4 +1,6 @@
-﻿namespace SevenZipSharpSimple
+﻿using System.Runtime.InteropServices;
+
+namespace SevenZipSharpSimple
 {
     /// <summary>
     /// The <see cref="ArchiveConfig"/> class allows providing additional parameters for
@@ -33,15 +35,12 @@
         /// <summary>
         /// Gets or sets the path to the native 7z library to load.
         /// </summary>
-        public string NativeLibraryPath { get; set; } = "7z.dll";
-        
+        public string NativeLibraryPath { get; set; } = GetDefault7zLibraryName();
+
         /// <summary>
         /// Gets the default configuration to use when no user configuration is provided.
         /// </summary>
-        internal static ArchiveConfig Default { get; } = new ArchiveConfig()
-        {
-            NativeLibraryPath = "7z.dll"
-        };
+        internal static ArchiveConfig Default { get; } = new ArchiveConfig();
         
         /// <summary>
         /// Creates a copy of the given <paramref name="config"/> to prevent that properties may be
@@ -63,6 +62,20 @@
                 NativeLibraryPath = string.IsNullOrEmpty(config.NativeLibraryPath) ? Default.NativeLibraryPath : config.NativeLibraryPath,
                 Password = config.Password,
             };
+        }
+
+        private static string GetDefault7zLibraryName()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return "7z.dll";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return "7z.so";
+            }
+
+            throw new System.PlatformNotSupportedException();
         }
     }
 }

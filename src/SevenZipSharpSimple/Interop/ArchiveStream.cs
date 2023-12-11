@@ -5,10 +5,14 @@ using System.Runtime.InteropServices;
 namespace SevenZipSharpSimple.Interop
 {
     /// <summary>
-    /// Implementation of the <see cref="IInputStream"/> and <see cref="IOutputStream"/> interfaces which
+    /// Implementation of the <see cref="IInputStream"/> and <see cref="ISequentialOutputStream"/> interfaces which
     /// wrap a given <see cref="Stream"/>.
     /// </summary>
-    internal sealed class ArchiveStream : IInputStream, IOutputStream, IDisposable
+#if NET8_0_OR_GREATER
+    [System.Runtime.InteropServices.Marshalling.GeneratedComClass]
+    partial
+#endif
+    class ArchiveStream : IInputStream, ISequentialOutputStream, IDisposable
     {
         private readonly bool _disposeBaseStream;
         private bool _disposed;
@@ -47,42 +51,6 @@ namespace SevenZipSharpSimple.Interop
         /// </summary>
         public Stream BaseStream { get; }
 
-        private void EnsureNotDisposed()
-        {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException("The InputStream has already been disposed.");
-            }
-        }
-
-        #region IInputStream
-        /// <inheritdoc />
-        int IInputStream.Read([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1), Out] byte[] buffer, uint size)
-        {
-            EnsureNotDisposed();
-
-            return BaseStream.Read(buffer, 0, (int)size);
-        }
-
-        /// <inheritdoc />
-        long IInputStream.Seek(long offset, SeekOrigin origin)
-        {
-            EnsureNotDisposed();
-            return BaseStream.Seek(offset, origin);
-        }
-        #endregion
-
-        #region IOutputStream
-        /// <inheritdoc />
-        int IOutputStream.Write(byte[] data, uint size)
-        {
-            EnsureNotDisposed();
-            BaseStream.Write(data, 0, (int)size);
-            return (int)size;
-        }
-        #endregion
-
-        #region IDisposable
         /// <inheritdoc />
         public void Dispose()
         {
@@ -98,6 +66,56 @@ namespace SevenZipSharpSimple.Interop
                 BaseStream?.Dispose();
             }
         }
-        #endregion
+
+        private void EnsureNotDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException("The InputStream has already been disposed.");
+            }
+        }
+
+        private int Write(byte[] data, uint size)
+        {
+            EnsureNotDisposed();
+            BaseStream.Write(data, 0, (int)size);
+            return (int)size;
+        }
+
+        private int Read(byte[] buffer, uint size)
+        {
+            EnsureNotDisposed();
+            return BaseStream.Read(buffer, 0, (int)size);
+        }
+
+        private int Seek(long offset, SeekOrigin origin, IntPtr newPositionPtr)
+        {
+            EnsureNotDisposed();
+
+            var position = BaseStream.Seek(offset, origin);
+
+            if (newPositionPtr != IntPtr.Zero)
+            {
+                unsafe
+                {
+                    System.Runtime.CompilerServices.Unsafe.Write(newPositionPtr.ToPointer(), position);
+                }
+            }
+
+            return 0;
+        }
+
+        /// <inheritdoc />
+#if NET8_0_OR_GREATER
+        int ISequentialInputStream.Read([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1), Out] byte[] buffer, uint size) => Read(buffer, size);
+#else
+        int IInputStream.Read([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1), Out] byte[] buffer, uint size) => Read(buffer, size);
+#endif
+
+        /// <inheritdoc />
+        int IInputStream.Seek(long offset, SeekOrigin origin, IntPtr newPositionPtr) => Seek(offset, origin, newPositionPtr);
+
+        /// <inheritdoc />
+        int ISequentialOutputStream.Write(byte[] data, uint size) => Write(data, size);
     }
 }

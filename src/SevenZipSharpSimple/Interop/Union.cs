@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 
 namespace SevenZipSharpSimple.Interop
 {
@@ -32,9 +31,6 @@ namespace SevenZipSharpSimple.Interop
         [FieldOffset(8)]
         private readonly ulong _uint64;
         
-        [FieldOffset(8)]
-        private readonly FILETIME _filetime;
-        
         /// <summary>
         /// Gets the union type.
         /// </summary>
@@ -52,8 +48,8 @@ namespace SevenZipSharpSimple.Interop
             switch (Type)
             {
                 case VarEnum.VT_BSTR:
-                    return Marshal.PtrToStringBSTR(_pointer);
-                
+                    return Detail.StringMarshal.BinaryStringToManagedString(_pointer);
+
                 default:
                     return string.Empty;
             }
@@ -74,9 +70,9 @@ namespace SevenZipSharpSimple.Interop
                 case VarEnum.VT_I8:
                 case VarEnum.VT_UI8:
                     return DateTime.FromFileTime(_int64);
-                
+
                 default:
-                    return DateTime.Now;
+                    return DateTime.UtcNow;
             }
         }
         

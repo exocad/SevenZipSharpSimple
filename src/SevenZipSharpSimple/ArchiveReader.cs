@@ -3,10 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
 using SevenZipSharpSimple.Detail;
 using SevenZipSharpSimple.Interop;
 
@@ -71,7 +67,7 @@ namespace SevenZipSharpSimple
             _delegate = @delegate ?? ArchiveReaderDelegate.Default;
             _format = Detail.Format.Detect(stream, out _offset, out var isExecutable);
             _disposeStreamOnDispose = !leaveOpen;
-            _libraryHandle = NativeMethods.LoadLibrary(Config.NativeLibraryPath);
+            _libraryHandle = Native.LoadLibrary(Config.NativeLibraryPath);
             _archive = CreateArchiveReader();
             _stream = stream;
             _stream.Seek(0, SeekOrigin.Begin);
@@ -94,7 +90,7 @@ namespace SevenZipSharpSimple
                 Count = _archive.GetNumberOfItems();
 
                 _entries = new ArchiveEntry[Count];
-                
+
                 for (var index = 0u; index < Count; ++index)
                 {
                     var entry = new ArchiveEntry()
@@ -324,17 +320,20 @@ namespace SevenZipSharpSimple
             }
         }
 
-        private IArchiveReader CreateArchiveReader()
+        private unsafe IArchiveReader CreateArchiveReader()
         {
-            var createObjectPtr = NativeMethods.GetProcAddress(_libraryHandle, "CreateObject");
-            var createObject = Marshal.GetDelegateForFunctionPointer<NativeMethods.CreateObjectDelegate>(createObjectPtr);
+            var createObject = Native.GetExportAs<Native.CreateObjectDelegate>(_libraryHandle, "CreateObject");
         
             var interfaceId = typeof(IArchiveReader).GUID;
             var classId = FormatHandler.KnownHandlers[_format];
 
             createObject(ref classId, ref interfaceId, out var @interface);
 
+#if NET8_0_OR_GREATER
+            return System.Runtime.InteropServices.Marshalling.ComInterfaceMarshaller<IArchiveReader>.ConvertToManaged(@interface.ToPointer());
+#else
             return @interface as IArchiveReader;
+#endif
         }
         
         private T GetProperty<T>(uint index, ArchiveEntryProperty property, Func<Union, T> convert)
