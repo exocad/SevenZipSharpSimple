@@ -2,7 +2,7 @@
 
 using static System.Console;
 
-var (archivePath, targetDir) = ("/mnt/t/github.com/exocad/SevenZipSharpSimple/test/test-data/archive.zip", ".");
+var (archivePath, targetDir) = ("/mnt/t/github.com/exocad/SevenZipSharpSimple/test/test-data/archive.7z", ".");
 
 for (var i = 0; i < args.Length - 1; i++)
 {

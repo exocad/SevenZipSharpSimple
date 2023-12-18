@@ -14,7 +14,7 @@ namespace SevenZipSharpSimple.Interop
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 #if NET8_0_OR_GREATER
     [System.Runtime.InteropServices.Marshalling.GeneratedComInterface(Options = System.Runtime.InteropServices.Marshalling.ComInterfaceOptions.ManagedObjectWrapper)]
-    unsafe partial
+    partial
 #else
     [ComImport]
 #endif

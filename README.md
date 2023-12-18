@@ -9,11 +9,11 @@ original definitions from the 7z repository at https://github.com/mcmilk/7-Zip/t
 
 ## Supported Frameworks
 
-This library supports .NET 6.0 and .NET 8.0. The latter also run under Linux.
+This library supports .NET 6.0 and .NET 8.0. The latter also runs under Linux.
 
 ### Linux Support
 
-The .NET 8 builds of `SevenZipSharpSimple` can run under Linux. The Linux
+The .NET 8 builds of `SevenZipSharpSimple` can run under Linux. The native 7z Linux
 library was build from the original repository at https://github.com/mcmilk/7-Zip
 by using the following commands:
 
@@ -29,8 +29,8 @@ here: https://github.com/mcmilk/7-Zip/blob/master/DOC/readme.txt.
 ### Native 7z Library
 
 The native 7z library is part of this repository, but not linked directly by the `SevenZipSharpSimple`
-project. This should be done in the executable project using this library, for example with the following
-snippet:
+project. This can be done by importing the `Native7zReferences.target` file in a `.csproj`, or with
+the following snippet:
 
 ```xml
   <ItemGroup>
@@ -38,8 +38,6 @@ snippet:
     <None Include="..\..\runtimes\linux\native\7z.so" Link="7z.so" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 ```
-
-A `Condition` statement may be added to include the file only for a specific platform.
 
 ## Versioning Scheme
 
@@ -62,8 +60,9 @@ Compression into and Decrompression from a binary blob can be handled with the `
 
 Reading files and their contents from an archive file requires the use of the `ArchiveReader` class, which
 internally makes use of native methods and some COM interface types declared by 7z.
-The `ArchiveReader` dynamically loads the native library at runtime to create an `IInArchive` COM object,
-which is then used to read the archives files and their content.
+The `ArchiveReader` dynamically loads the native library at runtime to create the native objects. By default,
+it assumes that the native library is located in the same directory as the main executable and named `7z.dll`
+or `7z.so`. If the name or location differs, it can be set in the `ArchiveConfig` class.
 
 ## Benchmarks
 

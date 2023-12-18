@@ -22,7 +22,7 @@ namespace SevenZipSharpSimple.Detail
         /// open operation.</param>
         /// <param name="baseStream">The stream providing the archive data. This stream
         /// will be reset to its beginning.</param>
-        public unsafe OpenArchiveGuard(IArchiveReader reader, Stream baseStream)
+        public OpenArchiveGuard(IArchiveReader reader, Stream baseStream)
         {
             var offset = 32768UL;
 

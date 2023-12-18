@@ -21,7 +21,7 @@ namespace SevenZipSharpSimple.Detail
         /// 4 bytes for Linux.
         /// </param>
         /// <returns>The resulting managed string.</returns>
-        public unsafe static string BinaryStringToManagedString(IntPtr ptr)
+        public static unsafe string BinaryStringToManagedString(IntPtr ptr)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {

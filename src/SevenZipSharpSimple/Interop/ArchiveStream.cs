@@ -75,20 +75,20 @@ namespace SevenZipSharpSimple.Interop
             }
         }
 
-        private int Write(byte[] data, uint size)
+        private int WriteCore(byte[] data, uint size)
         {
             EnsureNotDisposed();
             BaseStream.Write(data, 0, (int)size);
             return (int)size;
         }
 
-        private int Read(byte[] buffer, uint size)
+        private int ReadCore(byte[] buffer, uint size)
         {
             EnsureNotDisposed();
             return BaseStream.Read(buffer, 0, (int)size);
         }
 
-        private int Seek(long offset, SeekOrigin origin, IntPtr newPositionPtr)
+        private int SeekCore(long offset, SeekOrigin origin, IntPtr newPositionPtr)
         {
             EnsureNotDisposed();
 
@@ -107,15 +107,15 @@ namespace SevenZipSharpSimple.Interop
 
         /// <inheritdoc />
 #if NET8_0_OR_GREATER
-        int ISequentialInputStream.Read([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1), Out] byte[] buffer, uint size) => Read(buffer, size);
+        int ISequentialInputStream.Read([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1), Out] byte[] buffer, uint size) => ReadCore(buffer, size);
 #else
-        int IInputStream.Read([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1), Out] byte[] buffer, uint size) => Read(buffer, size);
+        int IInputStream.Read([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1), Out] byte[] buffer, uint size) => ReadCore(buffer, size);
 #endif
 
         /// <inheritdoc />
-        int IInputStream.Seek(long offset, SeekOrigin origin, IntPtr newPositionPtr) => Seek(offset, origin, newPositionPtr);
+        int IInputStream.Seek(long offset, SeekOrigin origin, IntPtr newPositionPtr) => SeekCore(offset, origin, newPositionPtr);
 
         /// <inheritdoc />
-        int ISequentialOutputStream.Write(byte[] data, uint size) => Write(data, size);
+        int ISequentialOutputStream.Write(byte[] data, uint size) => WriteCore(data, size);
     }
 }

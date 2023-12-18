@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".root", ".root", "{2FFF78F1
 		.gitignore = .gitignore
 		Directory.Build.props = Directory.Build.props
 		LICENSE = LICENSE
+		Native7zReferences.target = Native7zReferences.target
 		README.md = README.md
 	EndProjectSection
 EndProject

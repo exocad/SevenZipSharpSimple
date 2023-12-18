@@ -16,7 +16,7 @@ namespace SevenZipSharpSimple.Interop
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 #if NET8_0_OR_GREATER
     [System.Runtime.InteropServices.Marshalling.GeneratedComInterface]
-    unsafe partial
+    partial
 #else
     [ComImport]
 #endif
@@ -28,6 +28,6 @@ namespace SevenZipSharpSimple.Interop
         /// <param name="buffer">The buffer to copy the bytes from.</param>
         /// <param name="size">The number of bytes to copy.</param>
         /// <returns>The number of bytes written.</returns>
-        int Write([In][MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] byte[] buffer, uint size);
+        int Write([In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] byte[] buffer, uint size);
     }
 }

@@ -1,5 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+		<NoWarn>CA2256</NoWarn>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <SevenZipSharpSimple_KeyFilePath>$(SolutionDir)..\DentalCAD\snk\DentalConfigKeyPublicPrivate.snk</SevenZipSharpSimple_KeyFilePath>
   </PropertyGroup>
