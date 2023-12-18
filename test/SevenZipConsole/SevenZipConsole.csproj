@@ -3,16 +3,11 @@
     <OutputType>Exe</OutputType>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+	
+	<Import Project="../../Native7zReferences.target" />
 
-  <ItemGroup>
-    <None Include="..\..\runtimes\win\native\7z.dll" Link="7z.dll" CopyToOutputDirectory="PreserveNewest" />
-		<None Include="..\..\runtimes\linux\native\7z.so" Link="7z.so" CopyToOutputDirectory="PreserveNewest" />
-	</ItemGroup>
-
-  <ItemGroup>
+	<ItemGroup>
     <PackageReference Include="Squid-Box.SevenZipSharp" Version="1.6.1.23" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\SevenZipSharpSimple\SevenZipSharpSimple.csproj" />
+    <ProjectReference Include="../../src/SevenZipSharpSimple/SevenZipSharpSimple.csproj" />
   </ItemGroup>
 </Project>
