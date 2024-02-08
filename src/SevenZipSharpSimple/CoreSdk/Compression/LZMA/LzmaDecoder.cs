@@ -1,8 +1,10 @@
 using System;
 
-namespace SevenZipSharpSimple.Compression.LZMA
+namespace SevenZipSharpSimple.CoreSdk.Compression.LZMA
 {
     using RangeCoder;
+    using SevenZipSharpSimple.CoreSdk;
+    using SevenZipSharpSimple.CoreSdk.Compression.LZ;
 
     class Decoder : ICoder, ISetDecoderProperties // ,System.IO.Stream
     {
@@ -68,7 +70,7 @@ namespace SevenZipSharpSimple.Compression.LZMA
                 {
                     uint symbol = 1;
                     do
-                        symbol = (symbol << 1) | m_Decoders[symbol].Decode(rangeDecoder);
+                        symbol = symbol << 1 | m_Decoders[symbol].Decode(rangeDecoder);
                     while (symbol < 0x100);
                     return (byte)symbol;
                 }
@@ -80,12 +82,12 @@ namespace SevenZipSharpSimple.Compression.LZMA
                     {
                         uint matchBit = (uint)(matchByte >> 7) & 1;
                         matchByte <<= 1;
-                        uint bit = m_Decoders[((1 + matchBit) << 8) + symbol].Decode(rangeDecoder);
-                        symbol = (symbol << 1) | bit;
+                        uint bit = m_Decoders[(1 + matchBit << 8) + symbol].Decode(rangeDecoder);
+                        symbol = symbol << 1 | bit;
                         if (matchBit != bit)
                         {
                             while (symbol < 0x100)
-                                symbol = (symbol << 1) | m_Decoders[symbol].Decode(rangeDecoder);
+                                symbol = symbol << 1 | m_Decoders[symbol].Decode(rangeDecoder);
                             break;
                         }
                     }
@@ -107,7 +109,7 @@ namespace SevenZipSharpSimple.Compression.LZMA
                 m_NumPosBits = numPosBits;
                 m_PosMask = ((uint)1 << numPosBits) - 1;
                 m_NumPrevBits = numPrevBits;
-                uint numStates = (uint)1 << (m_NumPrevBits + m_NumPosBits);
+                uint numStates = (uint)1 << m_NumPrevBits + m_NumPosBits;
                 m_Coders = new Decoder2[numStates];
                 for (uint i = 0; i < numStates; i++)
                     m_Coders[i].Create();
@@ -115,13 +117,13 @@ namespace SevenZipSharpSimple.Compression.LZMA
 
             public void Init()
             {
-                uint numStates = (uint)1 << (m_NumPrevBits + m_NumPosBits);
+                uint numStates = (uint)1 << m_NumPrevBits + m_NumPosBits;
                 for (uint i = 0; i < numStates; i++)
                     m_Coders[i].Init();
             }
 
             uint GetState(uint pos, byte prevByte)
-            { return ((pos & m_PosMask) << m_NumPrevBits) + (uint)(prevByte >> (8 - m_NumPrevBits)); }
+            { return ((pos & m_PosMask) << m_NumPrevBits) + (uint)(prevByte >> 8 - m_NumPrevBits); }
 
             public byte DecodeNormal(RangeCoder.Decoder rangeDecoder, uint pos, byte prevByte)
             { return m_Coders[GetState(pos, prevByte)].DecodeNormal(rangeDecoder); }
@@ -130,7 +132,7 @@ namespace SevenZipSharpSimple.Compression.LZMA
             { return m_Coders[GetState(pos, prevByte)].DecodeWithMatchByte(rangeDecoder, matchByte); }
         };
 
-        LZ.OutWindow m_OutWindow = new LZ.OutWindow();
+        OutWindow m_OutWindow = new OutWindow();
         RangeCoder.Decoder m_RangeDecoder = new RangeCoder.Decoder();
 
         BitDecoder[] m_IsMatchDecoders = new BitDecoder[Base.kNumStates << Base.kNumPosStatesBitsMax];
@@ -168,7 +170,7 @@ namespace SevenZipSharpSimple.Compression.LZMA
             {
                 m_DictionarySize = dictionarySize;
                 m_DictionarySizeCheck = Math.Max(m_DictionarySize, 1);
-                uint blockSize = Math.Max(m_DictionarySizeCheck, (1 << 12));
+                uint blockSize = Math.Max(m_DictionarySizeCheck, 1 << 12);
                 m_OutWindow.Create(blockSize);
             }
         }
@@ -226,7 +228,7 @@ namespace SevenZipSharpSimple.Compression.LZMA
         }
 
         public void Code(System.IO.Stream inStream, System.IO.Stream outStream,
-            Int64 inSize, Int64 outSize, ICodeProgress progress)
+            long inSize, long outSize, ICodeProgress progress)
         {
             Init(inStream, outStream);
 
@@ -234,8 +236,8 @@ namespace SevenZipSharpSimple.Compression.LZMA
             state.Init();
             uint rep0 = 0, rep1 = 0, rep2 = 0, rep3 = 0;
 
-            UInt64 nowPos64 = 0;
-            UInt64 outSize64 = (UInt64)outSize;
+            ulong nowPos64 = 0;
+            ulong outSize64 = (ulong)outSize;
             if (nowPos64 < outSize64)
             {
                 if (m_IsMatchDecoders[state.Index << Base.kNumPosStatesBitsMax].Decode(m_RangeDecoder) != 0)
@@ -281,7 +283,7 @@ namespace SevenZipSharpSimple.Compression.LZMA
                             }
                             else
                             {
-                                UInt32 distance;
+                                uint distance;
                                 if (m_IsRepG1Decoders[state.Index].Decode(m_RangeDecoder) == 0)
                                 {
                                     distance = rep1;
@@ -314,14 +316,14 @@ namespace SevenZipSharpSimple.Compression.LZMA
                             if (posSlot >= Base.kStartPosModelIndex)
                             {
                                 int numDirectBits = (int)((posSlot >> 1) - 1);
-                                rep0 = ((2 | (posSlot & 1)) << numDirectBits);
+                                rep0 = (2 | posSlot & 1) << numDirectBits;
                                 if (posSlot < Base.kEndPosModelIndex)
                                     rep0 += BitTreeDecoder.ReverseDecode(m_PosDecoders,
                                             rep0 - posSlot - 1, m_RangeDecoder, numDirectBits);
                                 else
                                 {
-                                    rep0 += (m_RangeDecoder.DecodeDirectBits(
-                                        numDirectBits - Base.kNumAlignBits) << Base.kNumAlignBits);
+                                    rep0 += m_RangeDecoder.DecodeDirectBits(
+                                        numDirectBits - Base.kNumAlignBits) << Base.kNumAlignBits;
                                     rep0 += m_PosAlignDecoder.ReverseDecode(m_RangeDecoder);
                                 }
                             }
@@ -354,9 +356,9 @@ namespace SevenZipSharpSimple.Compression.LZMA
             int pb = remainder / 5;
             if (pb > Base.kNumPosStatesBitsMax)
                 throw new InvalidParamException();
-            UInt32 dictionarySize = 0;
+            uint dictionarySize = 0;
             for (int i = 0; i < 4; i++)
-                dictionarySize += ((UInt32)(properties[1 + i])) << (i * 8);
+                dictionarySize += (uint)properties[1 + i] << i * 8;
             SetDictionarySize(dictionarySize);
             SetLiteralProperties(lp, lc);
             SetPosBitsProperties(pb);

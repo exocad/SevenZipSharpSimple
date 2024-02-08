@@ -1,4 +1,4 @@
-namespace SevenZipSharpSimple.Compression.LZ
+namespace SevenZipSharpSimple.CoreSdk.Compression.LZ
 {
     class OutWindow
     {
@@ -37,7 +37,7 @@ namespace SevenZipSharpSimple.Compression.LZ
         public bool Train(System.IO.Stream stream)
         {
             long len = stream.Length;
-            uint size = (len < _windowSize) ? (uint)len : _windowSize;
+            uint size = len < _windowSize ? (uint)len : _windowSize;
             TrainSize = size;
             stream.Position = len - size;
             _streamPos = _pos = 0;

@@ -1,5 +1,6 @@
 ﻿using System.IO;
-using SevenZipSharpSimple.Compression.LZMA;
+using SevenZipSharpSimple.CoreSdk;
+using SevenZipSharpSimple.CoreSdk.Compression.LZMA;
 
 namespace SevenZipSharpSimple
 {
@@ -10,15 +11,24 @@ namespace SevenZipSharpSimple
     public sealed class Archive
     {
         /// <summary>
+        /// The progress delegate can be used by the <c>Compress</c> and <c>Decompress</c> methods to
+        /// receive notifications about the current progress. The progress may, however, be -1 in case
+        /// the compressor or decompressor cannot determine the sizes in advance.
+        /// </summary>
+        /// <param name="inputSize">The number of bytes that were read.</param>
+        /// <param name="outputSize">The number of bytes already written.</param>
+        public delegate void Progress(long inputSize, long outputSize);
+
+        /// <summary>
         /// Compresses the content of the <paramref name="source"/> stream and writes the compressed
         /// data to the <paramref name="target"/> stream.
         /// </summary>
         /// <param name="source">The stream containing the data to compress.</param>
         /// <param name="target">The stream to write the compressed data to.</param>
-        /// <param name="progress">An option instance of the <see cref="ICodeProgress"/> interface
+        /// <param name="progress">An optional instance of the <see cref="Progress"/> delegate
         /// which can be used to receive progress updates during compression.</param>
         /// <returns>The size of the compressed stream.</returns>
-        public static long Compress(Stream source, Stream target, ICodeProgress progress = null)
+        public static long Compress(Stream source, Stream target, Progress progress = null)
         {
             var position = target.Position;
             var encoder = CreateEncoderWithDefaultProperties();
@@ -26,7 +36,7 @@ namespace SevenZipSharpSimple
             WriteEncoderProperties(encoder, target);
             WriteLength64(source.Length, target);
 
-            encoder.Code(source, target, -1L, -1L, progress);
+            encoder.Code(source, target, -1L, -1L, new ProgressProxy(progress));
 
             return target.Position - position;
         }
@@ -36,10 +46,10 @@ namespace SevenZipSharpSimple
         /// the compressed data.
         /// </summary>
         /// <param name="content">The buffer containing the data to compress.</param>
-        /// <param name="progress">An option instance of the <see cref="ICodeProgress"/> interface
+        /// <param name="progress">An optional instance of the <see cref="Progress"/> delegate
         /// which can be used to receive progress updates during compression.</param>
         /// <returns>An array containing the compressed data.</returns>
-        public static byte[] Compress(byte[] content, ICodeProgress progress = null)
+        public static byte[] Compress(byte[] content, Progress progress = null)
         {
             using (var source = new MemoryStream(content))
             using (var target = new MemoryStream())
@@ -55,16 +65,16 @@ namespace SevenZipSharpSimple
         /// </summary>
         /// <param name="source">The stream providing the compressed data.</param>
         /// <param name="target">The stream to write the decompressed data to.</param>
-        /// <param name="progress">An option instance of the <see cref="ICodeProgress"/> interface
+        /// <param name="progress">An optional instance of the <see cref="Progress"/> delegate
         /// which can be used to receive progress updates during compression.</param>
-        public static void Decompress(Stream source, Stream target, ICodeProgress progress = null)
+        public static void Decompress(Stream source, Stream target, Progress progress = null)
         {
             var decoder = new Decoder();
             var properties = ReadDecoderProperties(source);
             var length = ReadLength64(source);
 
             decoder.SetDecoderProperties(properties);
-            decoder.Code(source, target, source.Length - source.Position, length, progress);
+            decoder.Code(source, target, source.Length - source.Position, length, new ProgressProxy(progress));
         }
 
         /// <summary>
@@ -72,10 +82,10 @@ namespace SevenZipSharpSimple
         /// containing the decompressed data.
         /// </summary>
         /// <param name="compressed">The array containing the compressed data.</param>
-        /// <param name="progress">An option instance of the <see cref="ICodeProgress"/> interface
+        /// <param name="progress">An optional instance of the <see cref="Progress"/> delegate
         /// which can be used to receive progress updates during compression.</param>
         /// <returns>An array containing the decompressed data.</returns>
-        public static byte[] Decompress(byte[] compressed, ICodeProgress progress = null)
+        public static byte[] Decompress(byte[] compressed, Progress progress = null)
         {
             using (var source = new MemoryStream(compressed))
             using (var target = new MemoryStream())
@@ -176,5 +186,12 @@ namespace SevenZipSharpSimple
                 target.WriteByte((byte) (length >> (8 * i)));
             }
         }
+
+        #region ProgressProxy
+        private readonly struct ProgressProxy(Progress callback) : ICodeProgress
+        {
+            void ICodeProgress.SetProgress(long inSize, long outSize) => callback?.Invoke(inSize, outSize);
+        }
+        #endregion
     }
 }

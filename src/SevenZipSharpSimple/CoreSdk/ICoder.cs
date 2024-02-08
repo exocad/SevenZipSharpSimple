@@ -1,6 +1,6 @@
 using System;
 
-namespace SevenZipSharpSimple
+namespace SevenZipSharpSimple.CoreSdk
 {
     /// <summary>
     /// The exception that is thrown when an error in input stream occurs during decoding.
@@ -29,7 +29,7 @@ namespace SevenZipSharpSimple
         /// <param name="outSize">
         /// output size. -1 if unknown.
         /// </param>
-        void SetProgress(Int64 inSize, Int64 outSize);
+        void SetProgress(long inSize, long outSize);
     };
 
     interface ICoder
@@ -56,7 +56,7 @@ namespace SevenZipSharpSimple
         /// if input stream is not valid
         /// </exception>
         void Code(System.IO.Stream inStream, System.IO.Stream outStream,
-            Int64 inSize, Int64 outSize, ICodeProgress progress);
+            long inSize, long outSize, ICodeProgress progress);
     };
 
     /*

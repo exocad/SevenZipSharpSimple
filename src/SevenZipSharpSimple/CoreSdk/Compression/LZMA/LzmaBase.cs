@@ -1,6 +1,6 @@
 // LzmaBase.cs
 
-namespace SevenZipSharpSimple.Compression.LZMA
+namespace SevenZipSharpSimple.CoreSdk.Compression.LZMA
 {
     internal abstract class Base
     {
@@ -43,26 +43,26 @@ namespace SevenZipSharpSimple.Compression.LZMA
             len -= kMatchMinLen;
             if (len < kNumLenToPosStates)
                 return len;
-            return (uint)(kNumLenToPosStates - 1);
+            return kNumLenToPosStates - 1;
         }
 
         public const int kNumAlignBits = 4;
         public const uint kAlignTableSize = 1 << kNumAlignBits;
-        public const uint kAlignMask = (kAlignTableSize - 1);
+        public const uint kAlignMask = kAlignTableSize - 1;
 
         public const uint kStartPosModelIndex = 4;
         public const uint kEndPosModelIndex = 14;
         public const uint kNumPosModels = kEndPosModelIndex - kStartPosModelIndex;
 
-        public const uint kNumFullDistances = 1 << ((int)kEndPosModelIndex / 2);
+        public const uint kNumFullDistances = 1 << (int)kEndPosModelIndex / 2;
 
         public const uint kNumLitPosStatesBitsEncodingMax = 4;
         public const uint kNumLitContextBitsMax = 8;
 
         public const int kNumPosStatesBitsMax = 4;
-        public const uint kNumPosStatesMax = (1 << kNumPosStatesBitsMax);
+        public const uint kNumPosStatesMax = 1 << kNumPosStatesBitsMax;
         public const int kNumPosStatesBitsEncodingMax = 4;
-        public const uint kNumPosStatesEncodingMax = (1 << kNumPosStatesBitsEncodingMax);
+        public const uint kNumPosStatesEncodingMax = 1 << kNumPosStatesBitsEncodingMax;
 
         public const int kNumLowLenBits = 3;
         public const int kNumMidLenBits = 3;
