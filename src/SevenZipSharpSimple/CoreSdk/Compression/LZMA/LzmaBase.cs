@@ -1,5 +1,3 @@
-// LzmaBase.cs
-
 namespace SevenZipSharpSimple.CoreSdk.Compression.LZMA
 {
     internal abstract class Base

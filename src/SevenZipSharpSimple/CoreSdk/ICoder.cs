@@ -18,7 +18,7 @@ namespace SevenZipSharpSimple.CoreSdk
         public InvalidParamException() : base("Invalid Parameter") { }
     }
 
-    public interface ICodeProgress
+    interface ICodeProgress
     {
         /// <summary>
         /// Callback progress.

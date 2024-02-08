@@ -1,5 +1,3 @@
-using System;
-
 namespace SevenZipSharpSimple.CoreSdk.Compression.RangeCoder
 {
     struct BitEncoder

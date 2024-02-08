@@ -1,5 +1,3 @@
-using System;
-
 namespace SevenZipSharpSimple.CoreSdk.Compression.LZ
 {
     class InWindow
