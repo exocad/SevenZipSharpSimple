@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
@@ -7,9 +7,8 @@
 	
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.13.2" />
-    <PackageReference Include="Squid-Box.SevenZipSharp" Version="1.6.1.23" />
-
-		<ProjectReference Include="../../src/SevenZipSharpSimple/SevenZipSharpSimple.csproj" />
+    <PackageReference Include="Squid-Box.SevenZipSharp" Version="1.6.1.23" Aliases="SevenZipSharp" />
+    <ProjectReference Include="..\..\src\SevenZip\SevenZip.csproj" />
 	</ItemGroup>
 	
   <ItemGroup>

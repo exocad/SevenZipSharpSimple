@@ -1,4 +1,4 @@
-﻿using SevenZipSharpSimple;
+﻿using SevenZip;
 
 using static System.Console;
 
@@ -20,6 +20,20 @@ for (var i = 0; i < args.Length - 1; i++)
 
 WriteLine("SevenZipSharpSimple Test Tool");
 
+{
+    var file = @"T:\github.com\exocad\SevenZipSharpSimple\test\test-data\sample.txt";
+    archivePath = @"T:\github.com\exocad\SevenZipSharpSimple\test\test-data\archive-test.7z";
+
+    using var writer = new ArchiveWriter(archivePath);
+
+    writer.AddFile("directory/sample.txt", file);
+    writer.Compress(new CompressProperties()
+    {
+        CompressionLevel = CompressionLevel.Ultra,
+    });
+}
+
+
 if (string.IsNullOrEmpty(archivePath))
 {
     WriteLine("Usage: SevenZipConsole --archive ARCHIVEPATH --target TARGETDIR");
@@ -39,8 +53,8 @@ WriteLine($"Format : {reader.Format}");
 WriteLine($"Entries: {reader.Count}");
 WriteLine("");
 
-var result = reader.ExtractAll(targetDir);
+reader.ExtractAll(targetDir);
 
-WriteLine($"Operation completed with: {result}");
+WriteLine($"Operation completed.");
 
 return;

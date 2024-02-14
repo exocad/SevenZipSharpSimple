@@ -5,9 +5,8 @@
   </PropertyGroup>
 	
 	<Import Project="../../Native7zReferences.target" />
-
+	
 	<ItemGroup>
-    <PackageReference Include="Squid-Box.SevenZipSharp" Version="1.6.1.23" />
-    <ProjectReference Include="../../src/SevenZipSharpSimple/SevenZipSharpSimple.csproj" />
-  </ItemGroup>
+	  <ProjectReference Include="..\..\src\SevenZip\SevenZip.csproj" />
+	</ItemGroup>
 </Project>

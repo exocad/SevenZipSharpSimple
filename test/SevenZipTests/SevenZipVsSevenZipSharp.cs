@@ -1,36 +1,37 @@
+extern alias SevenZipSharp;
+
 using System.IO;
-using SevenZipSharpSimple;
+using SevenZip;
 using Xunit;
 
-namespace SevenZipTests
+namespace SevenZipTests;
+
+public class SevenZipVsSevenZipSharp
 {
-    public class SevenZipVsSevenZipSharp
+    const string Data = "This is a sample text used to test the 7zip libraries.";
+
+    [Fact]
+    public void CompressWithSZAndDecompressWithSZS()
     {
-        const string Data = "This is a sample text used to test the 7zip libraries.";
+        var compressed = Lzma.Compress(EncodeString(Data));
+        var decompressed = SevenZipSharp.SevenZip.SevenZipExtractor.ExtractBytes(compressed);
+        var result = DecodeString(decompressed);
 
-        [Fact]
-        public void CompressWithSZAndDecompressWithSZS()
-        {
-            var compressed = Archive.Compress(EncodeString(Data));
-            var decompressed = SevenZip.SevenZipExtractor.ExtractBytes(compressed);
-            var result = DecodeString(decompressed);
-
-            Assert.Equal(Data, result);
-        }
-
-        [Fact]
-        public void CompressWithSZSAndDecompressWithSZ()
-        {
-            var compressed = SevenZip.SevenZipCompressor.CompressBytes(EncodeString(Data));
-            var decompressed = Archive.Decompress(compressed);
-            var result = DecodeString(decompressed);
-
-            Assert.Equal(Data, result);
-        }
-
-
-        static byte[] EncodeString(string value) => System.Text.Encoding.UTF8.GetBytes(value);
-
-        static string DecodeString(byte[] value) => System.Text.Encoding.UTF8.GetString(value);
+        Assert.Equal(Data, result);
     }
+
+    [Fact]
+    public void CompressWithSZSAndDecompressWithSZ()
+    {
+        var compressed = SevenZipSharp.SevenZip.SevenZipCompressor.CompressBytes(EncodeString(Data));
+        var decompressed = Lzma.Decompress(compressed);
+        var result = DecodeString(decompressed);
+
+        Assert.Equal(Data, result);
+    }
+
+
+    static byte[] EncodeString(string value) => System.Text.Encoding.UTF8.GetBytes(value);
+
+    static string DecodeString(byte[] value) => System.Text.Encoding.UTF8.GetString(value);
 }
