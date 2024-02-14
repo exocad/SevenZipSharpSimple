@@ -21,10 +21,10 @@ for (var i = 0; i < args.Length - 1; i++)
 WriteLine("SevenZipSharpSimple Test Tool");
 
 {
-    var file = @"T:\github.com\exocad\SevenZipSharpSimple\test\test-data\sample.txt";
-    archivePath = @"T:\github.com\exocad\SevenZipSharpSimple\test\test-data\archive-test.7z";
+    var file = @"/mnt/t/github.com/exocad/SevenZipSharpSimple/test/test-data/sample.txt";
+    archivePath = @"/mnt/t/github.com/exocad/SevenZipSharpSimple/test/test-data/archive-test.7z";
 
-    using var writer = new ArchiveWriter(archivePath);
+    using var writer = new ArchiveWriter(ArchiveFormat.SevenZip, archivePath);
 
     writer.AddFile("directory/sample.txt", file);
     writer.Compress(new CompressProperties()

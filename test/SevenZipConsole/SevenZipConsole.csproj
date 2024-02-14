@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-	
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
 	<Import Project="../../Native7zReferences.target" />
-	
+
 	<ItemGroup>
-	  <ProjectReference Include="..\..\src\SevenZip\SevenZip.csproj" />
+		<ProjectReference Include="..\..\src\SevenZip\SevenZip.csproj" />
 	</ItemGroup>
 </Project>

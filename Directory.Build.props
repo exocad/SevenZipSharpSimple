@@ -5,11 +5,13 @@
     <ProductName>SevenZip</ProductName>
     <Copyright>exocad GmbH</Copyright>
 		<Authors>exocad GmbH</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
 	<PropertyGroup>
 		<LangVersion>12</LangVersion>
+		<Platform>x64</Platform>
 		<Platforms>x64</Platforms>
-		<TargetFrameworks>net48;net6.0-windows;net8.0</TargetFrameworks>
+		<TargetFrameworks>net8.0;net6.0;net48</TargetFrameworks>
 	</PropertyGroup>
 </Project>

@@ -49,6 +49,10 @@ internal static class Native
         {
             // Continue and try to find the library within the application directory.
         }
+        catch (DllNotFoundException)
+        {
+            // Continue and try to find the library within the application directory.
+        }
 
         if (!Path.IsPathRooted(name))
         {
