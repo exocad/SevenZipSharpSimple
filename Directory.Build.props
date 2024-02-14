@@ -1,22 +1,15 @@
 ﻿<Project>
   <PropertyGroup>
-    <AssemblyVersion>23.01</AssemblyVersion>
-    <ProductVersion>23.01</ProductVersion>
-    <ProductName>7zip Sharp</ProductName>
-    <Copyright>Copyright Igor Pavlov and exocad GmbH</Copyright>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <ProductVersion>1.0.0</ProductVersion>
+    <ProductName>SevenZip</ProductName>
+    <Copyright>exocad GmbH</Copyright>
+		<Authors>exocad GmbH</Authors>
   </PropertyGroup>
 
 	<PropertyGroup>
+		<LangVersion>12</LangVersion>
 		<Platforms>x64</Platforms>
-		<Configurations>DebugNET6;ReleaseNET6;DebugNET8;ReleaseNET8</Configurations>
-		
-		<TargetFramework Condition="$(Configuration.Contains('NET8'))">net8.0</TargetFramework>
-		<TargetFramework Condition="$(Configuration.Contains('NET6'))">net6.0</TargetFramework>
-
-		<ConfigurationNameShort Condition="$(Configuration.Contains('Release'))">Release</ConfigurationNameShort>
-		<ConfigurationNameShort Condition="$(Configuration.Contains('Debug'))">Debug</ConfigurationNameShort>
-
-		<PlatformShortName Condition="'$(PlatformShortName)' == ''">$(TargetPlatform)</PlatformShortName>
-		<PlatformShortName Condition="'$(PlatformShortName)' == ''">$(Platform)</PlatformShortName>
+		<TargetFrameworks>net48;net6.0-windows;net8.0</TargetFrameworks>
 	</PropertyGroup>
 </Project>

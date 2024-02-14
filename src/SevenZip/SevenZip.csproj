@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+		<NoWarn>CA2256</NoWarn>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <SevenZipSharpSimple_KeyFilePath>$(SolutionDir)..\DentalCAD\snk\DentalConfigKeyPublicPrivate.snk</SevenZipSharpSimple_KeyFilePath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="Exists('$(SevenZipSharpSimple_KeyFilePath)')">
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(SevenZipSharpSimple_KeyFilePath)</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <Target Name="Notification" AfterTargets="PreBuildEvent">
+    <Message Text="Building a signed assembly." Importance="high" Condition="Exists('$(SevenZipSharpSimple_KeyFilePath)')" />
+    <Message Text="Building an unsigned assembly." Importance="high" Condition="!Exists('$(SevenZipSharpSimple_KeyFilePath)')" />
+  </Target>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+		<PackageReference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform" Version="4.1.0" />
+		<PackageReference Include="System.Buffers" Version="4.5.1" />
+		<PackageReference Include="System.Memory" Version="4.5.5" />
+		<PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+		<PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
+	</ItemGroup>
+</Project>
