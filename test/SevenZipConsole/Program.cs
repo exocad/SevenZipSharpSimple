@@ -1,6 +1,8 @@
-﻿using SevenZip;
-
+﻿using System.IO;
+using SevenZip;
+using SevenZip.Extensions;
 using static System.Console;
+
 
 var (archivePath, targetDir) = ("/mnt/t/github.com/exocad/SevenZipSharpSimple/test/test-data/archive.7z", ".");
 
@@ -27,6 +29,7 @@ WriteLine("SevenZipSharpSimple Test Tool");
     using var writer = new ArchiveWriter(ArchiveFormat.SevenZip, archivePath);
 
     writer.AddFile("directory/sample.txt", file);
+    writer.AddDirectoryRecursive("/mnt/t/dentalshare", NamingStrategy.RelativeToTopDirectoryInclusive);
     writer.Compress(new CompressProperties()
     {
         CompressionLevel = CompressionLevel.Ultra,
