@@ -27,6 +27,12 @@ namespace SevenZip.Detail;
 /// </para>
 /// 
 /// <para>
+///     On Linux, it looks like it is required to explicitly zero-terminate the native
+///     string with 4 zero-bytes. If not doing so, 'garbage' may be appended to the
+///     string and filenames for example will be incorrect.
+/// </para>
+/// 
+/// <para>
 ///     https://learn.microsoft.com/en-us/previous-versions/windows/desktop/automat/bstr
 /// </para>
 /// </summary>
@@ -98,11 +104,12 @@ internal static class StringMarshal
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
             var length = Encoding.UTF32.GetByteCount(value);
-            var nativeMemoryLength = 4 + length;
+            var nativeMemoryLength = 4 + length + 4;
             var nativeMemory = Marshal.AllocHGlobal(nativeMemoryLength);
             var buffer = new Span<byte>(nativeMemory.ToPointer(), nativeMemoryLength);
 
             Unsafe.Write(nativeMemory.ToPointer(), length);
+            Unsafe.Write(IntPtr.Add(nativeMemory, 4 + length).ToPointer(), 0U);
 
             Encoding.UTF32.GetBytes(value, buffer[4..]);
 
