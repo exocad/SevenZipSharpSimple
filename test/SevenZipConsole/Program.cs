@@ -1,10 +1,7 @@
-﻿using System.IO;
-using SevenZip;
-using SevenZip.Extensions;
+﻿using SevenZip;
 using static System.Console;
 
-
-var (archivePath, targetDir) = ("/mnt/t/github.com/exocad/SevenZipSharpSimple/test/test-data/archive.7z", ".");
+var (archivePath, targetDir) = (string.Empty, string.Empty);
 
 for (var i = 0; i < args.Length - 1; i++)
 {
@@ -16,25 +13,11 @@ for (var i = 0; i < args.Length - 1; i++)
     
     if (string.Equals(args[i], "--target", System.StringComparison.OrdinalIgnoreCase))
     {
-        targetDir = args[i + 1].Trim(' ', '\\');;
+        targetDir = args[i + 1].Trim(' ', '\\');
     }
 }
 
 WriteLine("SevenZipSharpSimple Test Tool");
-
-{
-    var file = @"/mnt/t/github.com/exocad/SevenZipSharpSimple/test/test-data/sample.txt";
-    archivePath = @"/mnt/t/github.com/exocad/SevenZipSharpSimple/test/test-data/archive-test.7z";
-
-    using var writer = new ArchiveWriter(ArchiveFormat.SevenZip, archivePath);
-
-    writer.AddFile("directory/sample.txt", file);
-    writer.AddDirectoryRecursive("/mnt/t/dentalshare", NamingStrategy.RelativeToTopDirectoryInclusive);
-    writer.Compress(new CompressProperties()
-    {
-        CompressionLevel = CompressionLevel.Ultra,
-    });
-}
 
 
 if (string.IsNullOrEmpty(archivePath))
@@ -56,8 +39,6 @@ WriteLine($"Format : {reader.Format}");
 WriteLine($"Entries: {reader.Count}");
 WriteLine("");
 
-reader.ExtractAll(targetDir);
+reader.ExtractAll(targetDir, ArchiveFlags.ApplyArchiveEntryTimestampsToFileStreams);
 
 WriteLine($"Operation completed.");
-
-return;
