@@ -7,7 +7,7 @@ namespace SevenZip;
 /// Representation of a single entry within an archive, which is either
 /// a file or a directory.
 /// </summary>
-public struct ArchiveEntry
+public readonly struct ArchiveEntry
 {
     /// <summary>
     /// Gets the entry index within the archive. This value must be used to explicitly
@@ -19,16 +19,16 @@ public struct ArchiveEntry
     /// Gets the relative path of the entry.
     /// </summary>
     public string Path { get; init; }
-        
-    /// <summary>
-    /// Gets the last write timestamp for the entry.
-    /// </summary>
-    public DateTime LastWriteTime { get; init; }
-        
+
     /// <summary>
     /// Gets the creation timestamp for the entry.
     /// </summary>
     public DateTime CreationTime { get; init; }
+
+    /// <summary>
+    /// Gets the last write timestamp for the entry.
+    /// </summary>
+    public DateTime LastWriteTime { get; init; }
         
     /// <summary>
     /// Gets the last access timestamp for the entry.

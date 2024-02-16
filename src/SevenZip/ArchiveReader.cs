@@ -307,7 +307,7 @@ public sealed class ArchiveReader : IDisposable
         }
 
         EnsureNotDisposed();
-        Extract(default(uint[]), OnGetStream, flags | ArchiveFlags.DisposeEntryStreams);
+        Extract(default(uint[]), OnGetStream, flags | ArchiveFlags.CloseArchiveEntryStreamAfterExtraction);
     }
 
     /// <inheritdoc/>

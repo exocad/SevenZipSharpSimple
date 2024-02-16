@@ -26,7 +26,8 @@ internal readonly struct OpenArchiveGuard : IDisposable
     {
         var offset = 32768UL;
 
-        _stream = new ArchiveStream(baseStream, 0L, leaveOpen: true);
+        _stream = new ArchiveStream(baseStream, leaveOpen: true);
+        _stream.BaseStream.Seek(0, SeekOrigin.Begin);
         _reader = reader;
         _result = _reader.Open(_stream, ref offset, null);
     }

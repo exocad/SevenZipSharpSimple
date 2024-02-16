@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using SevenZip.Detail;
 
 namespace SevenZip.Interop;
 
@@ -14,36 +15,35 @@ partial
 #endif
 class ArchiveStream : IInputStream, IOutputStream, IDisposable
 {
-    private readonly bool _disposeBaseStream;
+    private readonly FileUpdateInfo _updateInfo;
+    private readonly bool _leaveOpen;
     private bool _disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ArchiveStream"/> class.
     /// </summary>
-    /// <param name="baseStream">The base stream to refer to.</param>
-    /// <param name="leaveOpen">If <c>true</c>, the stream will be left open when this
+    /// <param name="baseStream">
+    /// The base stream to refer to.
+    /// </param>
+    /// <param name="leaveOpen">
+    /// If <c>true</c>, the stream will be left open when this
     /// instance is being disposed. Otherwise, the <paramref name="baseStream"/> will
-    /// be disposed as well.</param>
-    public ArchiveStream(Stream baseStream, bool leaveOpen = true)
+    /// be disposed as well.
+    /// </param>
+    /// <param name="updateInfo">
+    /// If specified, and if the <paramref name="baseStream"/> is a <see cref="FileStream"/>
+    /// providing a valid path, the properties of this update information will be applied
+    /// to the target file when this instance is being disposed.
+    /// 
+    /// This operation may fail or not work correctly if <paramref name="leaveOpen"/> is
+    /// <c>true</c>, since the stream is still in use and might prevent access or implicitly
+    /// modify a file property after this instace has been disposed.
+    /// </param>
+    public ArchiveStream(Stream baseStream, bool leaveOpen, FileUpdateInfo updateInfo = null)
     {
-        _disposeBaseStream = !leaveOpen;
-
+        _updateInfo = updateInfo;
+        _leaveOpen = leaveOpen;
         BaseStream = baseStream;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ArchiveStream"/> class and updates its
-    /// cursor to the given <paramref name="position"/>.
-    /// </summary>
-    /// <param name="baseStream">The base stream to refer to.</param>
-    /// <param name="position">The position to set the <paramref name="baseStream"/> to.</param>
-    /// <param name="leaveOpen">If <c>true</c>, the stream will be left open when this
-    /// instance is being disposed. Otherwise, the <paramref name="baseStream"/> will
-    /// be disposed as well.</param>
-    public ArchiveStream(Stream baseStream, long position, bool leaveOpen = true)
-        : this(baseStream, leaveOpen)
-    {
-        BaseStream.Seek(position, SeekOrigin.Begin);
     }
 
     /// <summary>
@@ -61,11 +61,40 @@ class ArchiveStream : IInputStream, IOutputStream, IDisposable
 
         _disposed = true;
 
-        if (_disposeBaseStream)
+        var path = GetFileStreamPathOrNull();
+
+        if (_leaveOpen is false)
         {
             BaseStream?.Dispose();
         }
+
+        if (_updateInfo != null && !string.IsNullOrEmpty(path))
+        {
+            TrySetFileTime(path, _updateInfo.CreationTime, File.SetCreationTime);
+            TrySetFileTime(path, _updateInfo.LastWriteTime, File.SetLastWriteTime);
+            TrySetFileTime(path, _updateInfo.LastAccessTime, File.SetLastAccessTime);
+        }
+
+        return;
+
+        static void TrySetFileTime(string path, DateTime time, Action<string, DateTime> method)
+        {
+            try
+            {
+                method(path, time);
+            }
+            catch
+            {
+                // ignore
+            }
+        }
     }
+
+    private string GetFileStreamPathOrNull() => BaseStream switch
+    {
+        FileStream fileStream => fileStream.Name,
+        _ => null,
+    };
 
     private void EnsureNotDisposed()
     {

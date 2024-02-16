@@ -75,10 +75,8 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtra
         return _reader.Entries[(int)index];
     }
        
-    private Stream OnGetStream(uint index, out OperationResult result)
+    private Stream OnGetStream(int index, in ArchiveEntry? entry, out OperationResult result)
     {
-        var entry = GetArchiveEntry(index);
-
         result = OperationResult.Ok;
         try
         {
@@ -86,10 +84,25 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtra
         }
         catch (Exception ex)
         {
-            _delegate.OnGetStreamFailed((int)index, entry, ex);
+            _delegate.OnGetStreamFailed(index, entry, ex);
             result = OperationResult.Unavailable;
             return null;
         }
+    }
+
+    private Detail.FileUpdateInfo GetFileUpdateInfo(in ArchiveEntry? entry)
+    {
+        if (entry == null || (_flags & ArchiveFlags.ApplyArchiveEntryTimestampsToFileStreams) == 0)
+        {
+            return null;
+        }
+
+        return new Detail.FileUpdateInfo()
+        {
+            CreationTime = entry.Value.CreationTime,
+            LastWriteTime = entry.Value.LastWriteTime,
+            LastAccessTime = entry.Value.LastAccessTime,
+        };
     }
 
     #region IArchiveExtractCallback
@@ -122,11 +135,12 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtra
 
             case ExtractOperation.Extract:
             default:
-                var leaveOpen = (_flags & ArchiveFlags.DisposeEntryStreams) == 0;
+                var leaveOpen = (_flags & ArchiveFlags.CloseArchiveEntryStreamAfterExtraction) == 0;
+                var entry = GetArchiveEntry(index);
 
-                output = stream = OnGetStream(index, out result) switch
+                output = stream = OnGetStream((int)index, entry, out result) switch
                 {
-                    { } baseStream => new ArchiveStream(baseStream, leaveOpen),
+                    { } baseStream => new ArchiveStream(baseStream, leaveOpen, GetFileUpdateInfo(entry)),
                     _ => null,
                 };
                 break;

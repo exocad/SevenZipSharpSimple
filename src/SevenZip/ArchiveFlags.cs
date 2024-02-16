@@ -16,5 +16,12 @@ public enum ArchiveFlags
     /// <summary>
     /// Dispose any stream that was created during an extract operation.
     /// </summary>
-    DisposeEntryStreams = 1,
+    CloseArchiveEntryStreamAfterExtraction = 1 << 0,
+
+    /// <summary>
+    /// Apply the original timestamps stored in the archive to extracted
+    /// files. This flag requires that <see cref="CloseArchiveEntryStreamAfterExtraction"/>
+    /// is set and that the associated stream is a <see cref="System.IO.FileStream"/>.
+    /// </summary>
+    ApplyArchiveEntryTimestampsToFileStreams = 1 << 1,
 }
