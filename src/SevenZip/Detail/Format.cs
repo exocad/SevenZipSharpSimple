@@ -59,7 +59,7 @@ internal static class Format
         var maxSignatureLength = FormatSignature.KnownSignatures.Max(sig => sig.SignatureLength);
 
         {
-            var headerLength = Math.Min((int)stream.Length, maxSignatureLength);
+            var headerLength = (int)Math.Min(stream.Length, maxSignatureLength);
             var header = ReadExactly(stream, stackalloc byte[headerLength]);
 
             foreach (var signature in FormatSignature.KnownSignatures)
@@ -111,8 +111,8 @@ internal static class Format
         {
             stream.Seek(0, SeekOrigin.Begin);
 
-            var length = Math.Min(stream.Length, 262144L);
-            var header = ReadExactly(stream, new byte[(int)length]);
+            var length = (int)Math.Min(stream.Length, 262144L);
+            var header = ReadExactly(stream, new byte[length]);
 
             foreach (var currentFormat in new[]
             {
