@@ -1,18 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Include="..\..\runtimes\win\native\7z.dll" Link="7z.dll" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
+	<Import Project="../../Native7zReferences.target" />
 
-  <ItemGroup>
-    <PackageReference Include="Squid-Box.SevenZipSharp" Version="1.6.1.23" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\SevenZipSharpSimple\SevenZipSharpSimple.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\SevenZip\SevenZip.csproj" />
+	</ItemGroup>
 </Project>

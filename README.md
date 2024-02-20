@@ -1,61 +1,184 @@
-# SevenZipSharpSimple
+# SevenZip
 
-Simple 7z CSharp project using the example sources from https://7-zip.org/sdk.html
+The SevenZip library for .NET provides classes to create, modify and extract different kinds
+of archives by using the native 7z library from Igor Pavlov. Additionally, it contains the
+original SDK code which allows compressing and decompressing binary data using the LZMA
+method.
 
-The declaration of the COM interfaces offered by the 7z library were made by reading the 
-original definitions from the 7z repository at https://github.com/mcmilk/7-Zip/tree/master.
+The library is written in C# and supports .NET 4.8 and .NET6 on Windows, and .NET 8
+on Windows and Linux.
 
-## Supported Frameworks
+## License
 
-The assembly is built against .netstandard 2.0 to support both, .NET Frameworks and .NET Core.
+==MIT==
 
-## Versioning Scheme
+### Notes
 
-The assembly version corresponds with the original SDK version.
+This repository contains slightly modified code taken from the original LZMA SDK,
+which is licensed under public domain. The code from the SDK is located in the
+`SevenZip.CoreSdk` namespace.
 
-## Signed Assembly
+### References
 
-The `SevenZipSharpSimple` assembly will automatically be signed if the keyfile at the following location is present:
-* `$(SolutionDir)..\DentalCAD\snk\DentalConfigKeyPublicPrivate.snk`
-
-Otherwise, an unsigned assembly will be generated.
+- Original [SDK code](https://7-zip.org/sdk.html) for LZMA compression.
+- The UUIDs for the COM interfaces were taken from the [7-Zip C/C++ library](https://github.com/mcmilk/7-Zip/tree/master).
+- The format detection is inspired by the original [SevenZipSharp](https://github.com/tomap/SevenZipSharp/tree/master) library,
+  which has been archived, but has some forks which are still being maintained.
+  - Most signatures can be obtained from [Wikipedia - List of file signatures](https://en.wikipedia.org/wiki/List_of_file_signatures).
 
 ## Usage
 
-### Functionality implemented in pure .NET
+### Reference the project
 
-Compression into and Decrompression from a binary blob can be handled with the `Archive` class.
+Clone the project into any location and add a reference to it.
 
-### Functionality requiring the native 7z library
+```xml
+<ItemGroup>
+  <ProjectReference Include="..\..\src\SevenZip\SevenZip.csproj" />
+</ItemGroup>
+```
 
-Reading files and their contents from an archive file requires the use of the `ArchiveReader` class, which
-internally makes use of native methods and some COM interface types declared by 7z.
-The `ArchiveReader` dynamically loads the native library at runtime to create an `IInArchive` COM object,
-which is then used to read the archives files and their content.
+### Reference the native 7z Library
 
-## Benchmarks
+The native 7z library is part of this repository, but not linked directly by the `SevenZip`
+project. This can be done by importing the `Native7zReferences.target` file in a `.csproj`, or with
+the following snippet:
 
-To test the SevenZipSharpLibrary, a benchmark and a unit test project where 7z and zip archives are being decompressed.
+```xml
+  <ItemGroup>
+    <None Include="..\..\runtimes\win\native\7z.dll" Link="7z.dll" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\runtimes\linux\native\7z.so" Link="7z.so" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+```
 
-The following table contains a local result of a benchmark run.
+The path to the native library can however be specified by setting the `ArchiveConfig.NativeLibraryPath`
+property, which is then passed to an `ArchiveReader` or `ArchiveWriter`.
 
+### Extracting an archive
 
-|                                Method | DataLength |       Mean |     Error |    StdDev |     Median |
-|-------------------------------------- |----------- |-----------:|----------:|----------:|-----------:|
-|      CompressData_SevenZipSharpSimple |        256 | 4,612.1 us | 160.73 us | 473.93 us | 4,722.3 us |
-|            CompressData_SevenZipSharp |        256 | 4,607.5 us | 102.22 us | 299.80 us | 4,646.6 us |
-|    DecompressData_SevenZipSharpSimple |        256 |   184.2 us |   3.67 us |  10.35 us |   183.4 us |
-|          DecompressData_SevenZipSharp |        256 |   187.9 us |   5.94 us |  16.15 us |   186.7 us |
-|  Extract7zArchive_SevenZipSharpSimple |        256 | 3,349.2 us | 111.43 us | 328.56 us | 3,207.7 us |
-|        Extract7zArchive_SevenZipSharp |        256 | 6,083.8 us | 119.90 us | 160.07 us | 6,039.9 us |
-| ExtractZipArchive_SevenZipSharpSimple |        256 | 3,285.3 us |  64.53 us |  79.25 us | 3,283.9 us |
-|       ExtractZipArchive_SevenZipSharp |        256 | 5,930.9 us |  76.66 us |  59.85 us | 5,928.1 us |
-|      CompressData_SevenZipSharpSimple |       2048 | 4,185.7 us |  28.65 us |  23.92 us | 4,183.2 us |
-|            CompressData_SevenZipSharp |       2048 | 4,198.6 us |  18.98 us |  17.75 us | 4,202.2 us |
-|    DecompressData_SevenZipSharpSimple |       2048 |   258.3 us |   3.30 us |   3.08 us |   257.6 us |
-|          DecompressData_SevenZipSharp |       2048 |   258.9 us |   2.14 us |   2.00 us |   259.2 us |
-|  Extract7zArchive_SevenZipSharpSimple |       2048 | 3,128.4 us |  60.04 us |  71.47 us | 3,119.6 us |
-|        Extract7zArchive_SevenZipSharp |       2048 | 6,014.4 us | 118.62 us | 158.35 us | 5,939.3 us |
-| ExtractZipArchive_SevenZipSharpSimple |       2048 | 3,315.3 us |  65.52 us |  82.87 us | 3,316.6 us |
-|       ExtractZipArchive_SevenZipSharp |       2048 | 5,991.5 us | 118.60 us | 141.18 us | 5,947.2 us |
+The `ArchiveReader` can extract specific files only or an entire archive. It operates
+with `System.IO.Stream`, which allows extracting to memory, files or anything else that 
+can be represented as stream.
+
+A stream to use for extraction is obtained by invoking a callback passed
+to the `Extract` method, which has to return the stream to use for a given entry.
+
+The easiest way to extract an entire archive is to use the `ExtractAll` method:
+
+```csharp
+using SevenZip
+
+using var reader = new ArchiveReader("archive.7z");
+
+reader.ExtractAll(targetDir, ArchiveFlags.ApplyArchiveEntryTimestampsToFileStreams);
+```
+
+To extract a single entry (or specific entries), the `Extract` methods can be used
+with the indices of the entries to extract. The index of an entry can be found by 
+iterating over the `ArchiveReader.Entries` property.
+
+The following snippet shows how to extract a set of entries:
+
+```csharp
+using SevenZip
+
+bool CanExtract(ArchiveEntry entry)
+{
+  return ...
+}
+
+using var reader = new ArchiveReader("archive.7z");
+
+var indices = reader.Entries
+  .Where(entry => CanExtract(entry))
+  .Select(entry => entry.Index)
+  .TolArray();
+
+reader.Extract(
+  indices,
+  entry => File.Open(Path.Join(baseDir, entry.Path), FileMode.Create, FileAccess.Write),
+  ArchiveFlags.ApplyArchiveEntryTimestampsToFileStreams |
+    ArchiveFlags.CloseArchiveEntryStreamAfterExtraction);
+```
+
+### Creating or modifying an archive
+
+The `ArchiveWriter` class can be used to create or update an archive. If the class is initialized
+with a contructor expecting an `ArchiveFormat` parameter, a new archive is created - even if an
+archive already exists at the given location!
+
+To update an existing archive, choose a constructor not expecting the `ArchiveFormat`. The `ArchiveWriter`
+will then detect the format from the existing archive (or throws an exception if it can't).
+
+When adding new files to an archive an archive-path must be specified indicating the full
+path the new entry should have within the archive.
+
+```csharp
+using SevenZip;
+using SevenZip.Extensions;
+
+// Create a new archive (or override an existing one)
+using var writer = new ArchiveWriter(ArchiveFormat.SevenZip, "archive.7z");
+
+// Add "./directory/filename.txt" as "archive/filename.txt" to the archive.
+writer.AddFile("archive/filename.txt", "./directory/filename.txt");
+
+// Add all files from "otherdir" to the archive, using a specific naming strategy.
+writer.AddDirectory("./otherdir", NamingStrategy.RelativeToTopDirectoryInclusive);
+
+// Write the changes
+writer.Compress();
+```
+
+To modify or remove existing entries, use the `ArchiveWriter.ExistingEntries` property to
+search for the index of the entry to update or delete. `ArchiveWriter.ReplaceEntry`
+and `ArchiveWriter.DeleteEntry` can then be used to prepare the changes.
+
+To actually write the changes, call `ArchiveWriter.Compress`.
+
+```csharp
+using SevenZip;
+using SevenZip.Extensions;
+
+// Create a new archive (or override an existing one)
+using var writer = new ArchiveWriter("archive.7z");
+
+// Remove entry with index 10.
+writer.RemoveEntry(10);
+
+// Replace entry 11 with the contents of another file.
+writer.ReplaceEntry(11, "./contents/anotherfile.txt");
+
+// Write the changes
+writer.Compress();
+```
+| Important |
+| :--- |
+| If an existing archive is modified, a local copy of the original data is stored in a temporary file which will be deleted again afterwards when calling `Compress`. This is required since simultaneous read and write operations are not supported. |
+
+Once `Compress` has been called, the `ExistingEntries` properties is being updated. In most scenarios,
+the method should only be called once and the `ArchiveWriter` should then be disposed again. However,
+for streams supporting both read and write operations, it may be called multiple times.
+
+## Limitations
+
+- Multi-part archives are not supported. If there is a requirement, this may be added in
+  a future release.
+- Encryption is not yet fully supported. It can however be set by adding the parameters
+  "he" and/or "em" (for Zip archives only) to the `CompressProperties` class.
+
+## Linux Support
+
+The .NET 8 builds of `SevenZip` can run under Linux. The native 7z Linux
+library was build from the original repository at https://github.com/mcmilk/7-Zip
+by using the following commands:
+
+```bash
+git clone https://github.com/mcmilk/7-Zip.git
+cd 7-zip/CPP/7zip/Bundles/Format7zF
+make -f makefile.gcc
+```
+
+The different bundles and the formats they support are explained here:
+https://github.com/mcmilk/7-Zip/blob/master/DOC/readme.txt.
 

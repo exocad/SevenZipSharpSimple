@@ -1,10 +1,17 @@
 ﻿<Project>
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-
-    <AssemblyVersion>23.01</AssemblyVersion>
-    <ProductVersion>23.01</ProductVersion>
-    <ProductName>7zip Sharp</ProductName>
-    <Copyright>Copyright Igor Pavlov and exocad GmbH</Copyright>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <ProductVersion>1.0.0</ProductVersion>
+    <ProductName>SevenZip</ProductName>
+    <Copyright>exocad GmbH</Copyright>
+		<Authors>exocad GmbH</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
+
+	<PropertyGroup>
+		<LangVersion>12</LangVersion>
+		<Platform>x64</Platform>
+		<Platforms>x64</Platforms>
+		<TargetFrameworks>net8.0;net6.0-windows;net48</TargetFrameworks>
+	</PropertyGroup>
 </Project>

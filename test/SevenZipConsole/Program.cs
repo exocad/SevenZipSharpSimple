@@ -1,8 +1,7 @@
-﻿using SevenZipSharpSimple;
-
+﻿using SevenZip;
 using static System.Console;
 
-var (archivePath, targetDir) = (string.Empty, ".");
+var (archivePath, targetDir) = (string.Empty, string.Empty);
 
 for (var i = 0; i < args.Length - 1; i++)
 {
@@ -14,11 +13,12 @@ for (var i = 0; i < args.Length - 1; i++)
     
     if (string.Equals(args[i], "--target", System.StringComparison.OrdinalIgnoreCase))
     {
-        targetDir = args[i + 1].Trim(' ', '\\');;
+        targetDir = args[i + 1].Trim(' ', '\\');
     }
 }
 
 WriteLine("SevenZipSharpSimple Test Tool");
+
 
 if (string.IsNullOrEmpty(archivePath))
 {
@@ -39,8 +39,6 @@ WriteLine($"Format : {reader.Format}");
 WriteLine($"Entries: {reader.Count}");
 WriteLine("");
 
-var result = reader.ExtractAll(targetDir);
+reader.ExtractAll(targetDir, ArchiveFlags.ApplyArchiveEntryTimestampsToFileStreams);
 
-WriteLine($"Operation completed with: {result}");
-
-return;
+WriteLine($"Operation completed.");

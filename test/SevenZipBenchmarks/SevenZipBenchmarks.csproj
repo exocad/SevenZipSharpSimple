@@ -1,22 +1,18 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net48</TargetFramework>
-  </PropertyGroup>
+	<Import Project="../../Native7zReferences.target" />
 
-  <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.2" />
-    <PackageReference Include="SevenZipSharp.Net45" Version="1.0.19" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="BenchmarkDotNet" Version="0.13.2" />
+		<PackageReference Include="Squid-Box.SevenZipSharp" Version="1.6.1.23" Aliases="SevenZipSharp" />
+		<ProjectReference Include="..\..\src\SevenZip\SevenZip.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\..\runtimes\win\native\7z.dll" Link="7z.dll" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\test-data\archive.zip" Link="test-data\archive.zip" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\test-data\archive.7z" Link="test-data\archive.7z" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\SevenZipSharpSimple\SevenZipSharpSimple.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="../test-data/archive.zip" Link="test-data/archive.zip" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="../test-data/archive.7z" Link="test-data/archive.7z" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
 </Project>
