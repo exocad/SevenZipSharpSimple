@@ -327,6 +327,58 @@ public sealed class ArchiveReader : IDisposable
     /// </summary>
     internal ArchiveConfig Config { get; }
 
+    /// <summary>
+    /// Opens the archive for a transaction, allowing multiple <c>Extract</c> calls
+    /// without the need to create a context or to open the archive per call.
+    /// </summary>
+    /// <param name="onGetStream">
+    /// A callback which is invoked to obtain the output stream for
+    /// an archive entry. The stream is then used to write the uncompressed content.
+    /// </param>
+    /// <param name="flags">
+    /// Additional flags to configure the extraction behavior. See <see cref="ArchiveFlags"/>
+    /// for details.
+    /// </param>
+    /// <returns>
+    /// An instance of the <see cref="OpenArchiveGuard"/> which must be disposed
+    /// once the transaction is complete.
+    /// </returns>
+    internal (OpenArchiveGuard, ExtractContext) CreateTransaction(Func<ArchiveEntry, Stream> onGetStream, ArchiveFlags flags) => 
+        (new OpenArchiveGuard(_reader, _stream.BaseStream), new ExtractContext(this, _delegate, flags, onGetStream));
+
+    /// <summary>
+    /// Extracts the given <paramref name="indices"/> indices to the streams provided
+    /// by the <paramref name="context"/>.
+    /// 
+    /// This method is used by the <see cref="ExtractTransaction"/>, which allows
+    /// extraction of multiple files with separate <c>Extract</c> calls without
+    /// the need to reopen the archive for each call.
+    /// </summary>
+    /// <param name="indices">
+    /// An array containing the indices of the entries to extract.
+    /// </param>
+    /// <param name="length">
+    /// The number of entries to extract.
+    /// </param>
+    /// <param name="context">
+    /// The context to use to obtain streams and track the progress.
+    /// </param>
+    /// <exception cref="ArgumentException">Thrown if any index is out of range.</exception>
+    /// <exception cref="ObjectDisposedException">Thrown if the object has already been disposed.</exception>
+    /// <exception cref="Exception">
+    /// A more generic exception may be thrown when the native library reports an error.
+    /// The <see cref="Exception.HResult"/> property may be used to retrieve the error code.
+    /// </exception>
+    internal void Extract(uint[] indices, int length, ExtractContext context)
+    {
+        EnsureEntryIndicesAreValid(indices);
+        EnsureNotDisposed();
+
+        var result = _reader.Extract(indices, (uint)length, 0, context);
+
+        Marshal.ThrowExceptionForHR(result);
+    }
+
     private void Extract(uint[] indices, Func<ArchiveEntry, Stream> onGetStream, ArchiveFlags flags = ArchiveFlags.None)
     {
         EnsureArgumentNotNull(onGetStream, nameof(onGetStream));
