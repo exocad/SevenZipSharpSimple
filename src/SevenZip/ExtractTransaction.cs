@@ -201,6 +201,7 @@ public sealed class ExtractTransaction : IDisposable
             return;
         }
 
+        _disposed = true;
         _guard.Dispose();
         _streams.Clear();
         _context.Dispose();
