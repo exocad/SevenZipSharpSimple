@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 
 namespace SevenZip;
@@ -7,6 +8,7 @@ namespace SevenZip;
 /// Representation of a single entry within an archive, which is either
 /// a file or a directory.
 /// </summary>
+[DebuggerDisplay("ArchiveEntry(Index = {Index}, Path = {Path}, Attributes = {Attributes}")]
 public readonly struct ArchiveEntry
 {
     /// <summary>

@@ -41,7 +41,7 @@ public sealed class PathEnumerator
     /// Thrown when <paramref name="directory"/> or <paramref name="searchPattern"/> is an empty string.
     /// </exception>
     public PathEnumerator(string directory, string searchPattern, bool recursive, NamingStrategy strategy)
-        : this(directory, searchPattern, recursive, GetSelector(strategy, directory))
+        : this(directory, searchPattern, recursive, NamingStrategySelector.Get(strategy, directory))
     {
     }
 
@@ -123,66 +123,5 @@ public sealed class PathEnumerator
 
             yield return (path, archivePath);
         }
-    }
-
-    private static Func<string, string> GetSelector(NamingStrategy strategy, string directory)
-    {
-        return strategy switch
-        {
-            NamingStrategy.RelativeToTopDirectoryInclusive => GetRelativeToTopDirSelector(directory, includeTopDirectoryName: true),
-            NamingStrategy.RelativeToTopDirectoryExclusive => GetRelativeToTopDirSelector(directory, includeTopDirectoryName: false),
-            NamingStrategy.FilenamesOnly => GetFilenameSelector(),
-            _ => GetAbsoluteSelector(),
-        };
-    }
-
-    private static Func<string, string> GetFilenameSelector()
-    {
-        return Path.GetFileName;
-    }
-
-    private static Func<string, string> GetAbsoluteSelector()
-    {
-        return path =>
-        {
-            return Path.GetPathRoot(path) switch
-            {
-                string root when !string.IsNullOrWhiteSpace(root) => path.Substring(root.Length),
-                _ => path,
-            };
-        };
-    }
-
-    [SuppressMessage("ReSharper", "UseIndexFromEndExpression")]
-    private static Func<string, string> GetRelativeToTopDirSelector(string directory, bool includeTopDirectoryName)
-    {
-        var root = Path.GetFullPath(directory);
-
-        if (string.IsNullOrEmpty(root))
-        {
-            return path => path;
-        }
-
-        if (includeTopDirectoryName)
-        {
-            var parent = Directory.GetParent(root);
-            if (parent != null)
-            {
-                root = parent.FullName;
-            }
-        }
-
-        root = root.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
-
-        if (root.Length > 0 && root[root.Length - 1] != Path.DirectorySeparatorChar)
-        {
-            root += Path.DirectorySeparatorChar;
-        }
-
-        var offset = root.Length;
-
-        return path => path.StartsWith(root, StringComparison.InvariantCultureIgnoreCase)
-            ? path.Substring(offset)
-            : path;
     }
 }

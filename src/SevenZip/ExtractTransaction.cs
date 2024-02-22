@@ -146,6 +146,8 @@ public sealed class ExtractTransaction : IDisposable
 
             cursor++;
         }
+
+        _reader.Extract(_indices.Value, count, _context);
     }
 
     /// <summary>
@@ -191,6 +193,8 @@ public sealed class ExtractTransaction : IDisposable
             _indices.Value[cursor] = (uint)index;
             _streams[index] = onGetStream(index);
         }
+
+        _reader.Extract(_indices.Value, count, _context);
     }
 
     /// <inheritdoc />
