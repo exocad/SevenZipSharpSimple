@@ -14,6 +14,8 @@ namespace SevenZip.Specialized;
 /// </summary>
 internal interface IScopedStreamPool : IDisposable
 {
+    int Capacity { get; }
+
     /// <summary>
     /// Resets the internal memory pool to allow reusing the pool for new
     /// streams. All streams that were allocated previously must no longer

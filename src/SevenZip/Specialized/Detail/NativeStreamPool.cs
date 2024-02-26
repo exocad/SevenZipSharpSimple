@@ -39,6 +39,8 @@ internal sealed class NativeStreamPool : IScopedStreamPool
         GC.AddMemoryPressure(capacity);
     }
 
+    public int Capacity => _capacity;
+
     /// <inheritdoc />
     public unsafe void Dispose()
     {
