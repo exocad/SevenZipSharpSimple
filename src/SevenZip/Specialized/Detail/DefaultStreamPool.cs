@@ -27,6 +27,8 @@ internal sealed class DefaultStreamPool : IScopedStreamPool
         _buffer = new byte[capacity];
     }
 
+    public int Capacity => _capacity;
+
     /// <inheritdoc />
     public void Dispose()
     {
