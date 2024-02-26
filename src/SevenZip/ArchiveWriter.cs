@@ -103,7 +103,7 @@ public sealed class ArchiveWriter : IDisposable
     /// overwritten when calling <see cref="Compress(CompressProperties)"/>.
     /// </summary>
     /// <param name="stream">
-    /// The stream to read existing archive data from to write the new data to. The <see cref="ArchiveFormat"/>
+    /// The stream to read existing archive data from to write the new data to. The <see cref="SevenZip.ArchiveFormat"/>
     /// is read from this stream.
     /// </param>
     /// <param name="leaveOpen">
@@ -245,6 +245,11 @@ public sealed class ArchiveWriter : IDisposable
 
         UpdateContext = new ArchiveUpdateContext(ReadExistingArchiveEntries(stream));
     }
+
+    /// <summary>
+    /// Gets the selected format for this archive.
+    /// </summary>
+    public ArchiveFormat ArchiveFormat =>_format;
 
     /// <summary>
     /// Gets a list of all already existing archive entries.

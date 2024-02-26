@@ -10,9 +10,9 @@ namespace SevenZip.Detail;
 /// </summary>
 sealed class ArchiveUpdateEntry
 {
-    private readonly Func<string, Stream> _createStream;
     private readonly bool _leaveOpen;
     private readonly string _path;
+    private Stream _stream;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ArchiveEntry"/> class. This
@@ -27,9 +27,9 @@ sealed class ArchiveUpdateEntry
         Attributes = isDirectory ? FileAttributes.Directory : FileAttributes.Normal;
         ArchivePath = string.Empty;
 
-        _createStream = _ => throw new InvalidOperationException();
-        _leaveOpen = false;
         _path = string.Empty;
+        _stream = null;
+        _leaveOpen = false;
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ sealed class ArchiveUpdateEntry
         CreationTime = fileInfo.CreationTime;
 
         _path = path;
-        _createStream = p => File.Open(p, FileMode.Open, FileAccess.Read, FileShare.Read);
+        _stream = null;
         _leaveOpen = false;
     }
 
@@ -86,7 +86,8 @@ sealed class ArchiveUpdateEntry
         LastWriteTime =
         CreationTime = DateTime.UtcNow;
 
-        _createStream = _ => source;
+        _path = string.Empty;
+        _stream = source;
         _leaveOpen = leaveOpen;
     }
 
@@ -155,8 +156,23 @@ sealed class ArchiveUpdateEntry
     /// <returns>An <see cref="ArchiveStream"/> to read the content from.</returns>
     public ArchiveStream CreateStream()
     {
-        return new ArchiveStream(
-            _createStream(_path),
-            _leaveOpen);
+        if (TryReleaseStream(out var stream))
+        {
+            return new ArchiveStream(stream, _leaveOpen);
+        }
+
+        if (!string.IsNullOrEmpty(_path))
+        {
+            return new ArchiveStream(File.Open(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), _leaveOpen);
+        }
+
+        throw new InvalidOperationException($"The entry {ArchivePath} does not reference an existing stream or a file.");
+    }
+
+    private bool TryReleaseStream(out Stream stream)
+    {
+        stream = _stream;
+        _stream = null;
+        return stream != null;
     }
 }

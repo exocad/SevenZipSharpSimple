@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using SevenZip.Detail;
 using SevenZip.Interop;
 
@@ -16,6 +17,7 @@ internal sealed partial class CompressContext : MarshalByRefObject, IArchiveUpda
     private readonly CurrentEntry _state = new();
     private readonly IArchiveWriterDelegate _delegate;
     private readonly ArchiveWriter _writer;
+    private readonly List<ArchiveStream> _deferredStreams;
     private ulong _total;
     private bool _disposed;
 
@@ -28,6 +30,9 @@ internal sealed partial class CompressContext : MarshalByRefObject, IArchiveUpda
     {
         _writer = writer;
         _delegate = @delegate;
+        _deferredStreams = CanDisposeStreamImmediately(writer.ArchiveFormat)
+            ? null
+            : new List<ArchiveStream>();
     }
 
     /// <inheritdoc />
@@ -39,7 +44,13 @@ internal sealed partial class CompressContext : MarshalByRefObject, IArchiveUpda
         }
 
         _disposed = true;
-        _state.Reset(OperationResult.Ok, null);
+        _state.Reset(OperationResult.Ok, null, _deferredStreams);
+
+        if (_deferredStreams != null)
+        {
+            _deferredStreams.ForEach(stream => stream.Dispose());
+            _deferredStreams.Clear();
+        }
     }
 
     private void EnsureNotDisposed()
@@ -49,6 +60,8 @@ internal sealed partial class CompressContext : MarshalByRefObject, IArchiveUpda
             throw new ObjectDisposedException("The CompressContext object has already been disposed.");
         }
     }
+
+    private static bool CanDisposeStreamImmediately(ArchiveFormat format) => format != ArchiveFormat.Zip;
 
     #region IArchiveUpdateCallback
     void IArchiveUpdateCallback.SetTotal(ulong total)
@@ -160,7 +173,7 @@ internal sealed partial class CompressContext : MarshalByRefObject, IArchiveUpda
     {
         EnsureNotDisposed();
 
-        _state.Reset(operationResult, this);
+        _state.Reset(operationResult, this, _deferredStreams);
     }
     #endregion
 
@@ -199,16 +212,24 @@ internal sealed partial class CompressContext : MarshalByRefObject, IArchiveUpda
             _path = path;
         }
 
-        public void Reset(OperationResult result, CompressContext context)
+        public void Reset(OperationResult result, CompressContext context, ICollection<ArchiveStream> deferredStreams)
         {
             if (context != null && _index != null)
             {
                 context._delegate?.OnCompressOperation((int)_index, _path ?? string.Empty, result);
             }
 
-            _index = null;
+            if (deferredStreams != null && _stream != null)
+            {
+                deferredStreams.Add(_stream);
+            }
+            else
+            {
+                _stream?.Dispose();
+            }
+
             _path = null;
-            _stream?.Dispose();
+            _index = null;
             _stream = null;
         }
     }
