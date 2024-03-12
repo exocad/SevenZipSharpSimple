@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace SevenZip.Specialized;
 
@@ -37,23 +36,21 @@ public sealed class InMemoryArchiveRepacker
     /// The maximum capacity that can be used to store the extracted data. Once this limit
     /// is reached, the yet extracted data will be written to the target archive and the
     /// memory will be reused for the next bulk of streams.
+    /// If set to zero, the capacity will be determined based on the uncompressed archive
+    /// size.
     /// </param>
     public InMemoryArchiveRepacker(ArchiveReader reader, ArchiveWriter writer, RepackerFlags flags = RepackerFlags.None, int capacity = 0)
     {
         _reader = reader;
         _writer = writer;
-        _capacity = GetStreamPoolCapacity(reader, capacity);
+        _capacity = capacity;
         _useNativeStreamPool = (flags & RepackerFlags.UseNativeMemory) != 0;
     }
 
     /// <summary>
     /// Gets the maximum capacity for the internal memory reserved for the streams.
     /// </summary>
-    /// <remarks>
-    /// The limit is documented in the <a href="https://learn.microsoft.com/en-us/dotnet/api/system.array?view=net-8.0&redirectedfrom=MSDN#remarks">
-    /// Array Class - Remarks</a> section.
-    /// </remarks>
-    public const int MaxCapacity = 0x7FFFFFC7;
+    public const int MaxCapacity = ScopedStreamPoolFactory.MaxCapacity;
 
     /// <summary>
     /// Starts the repacking process and copies files from the source archive to the
@@ -74,7 +71,7 @@ public sealed class InMemoryArchiveRepacker
         var flags = ArchiveFlags.None;
         var indices = new Dictionary<int, (string, Stream)>();
 
-        using var pool = CreateScopedStreamPool(_useNativeStreamPool, _capacity);
+        using var pool = ScopedStreamPoolFactory.Create(_reader, _useNativeStreamPool, _capacity);
         using var transaction = new ExtractTransaction(_reader, flags);
 
         foreach (var entry in _reader.Entries)
@@ -92,7 +89,7 @@ public sealed class InMemoryArchiveRepacker
             var path = getArchivePath(entry);
             var size = (int)entry.UncompressedSize;
 
-            if (size > _capacity)
+            if (size > pool.Capacity)
             {
                 indices.Add(entry.Index, (path, new MemoryStream(size)));
                 continue;
@@ -128,31 +125,5 @@ public sealed class InMemoryArchiveRepacker
         _writer.Compress();
         indices.Clear();
         pool.Discard();
-    }
-
-    private static int GetStreamPoolCapacity(ArchiveReader reader, int capacity)
-    {
-        if (capacity > 0)
-        {
-            return Math.Min(capacity, MaxCapacity);
-        }
-
-        return GetUncompressedArchiveSize(reader) switch
-        {
-            > MaxCapacity => MaxCapacity,
-            var value => (int)value
-        };
-    }
-
-    private static ulong GetUncompressedArchiveSize(ArchiveReader reader)
-    {
-        return reader.Entries.Aggregate(0UL, (current, entry) => current + entry.UncompressedSize);
-    }
-
-    private static IScopedStreamPool CreateScopedStreamPool(bool useNativeMemory, int capacity)
-    {
-        return useNativeMemory
-            ? new Detail.NativeStreamPool(capacity)
-            : new Detail.DefaultStreamPool(capacity);
     }
 }

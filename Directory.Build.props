@@ -5,7 +5,8 @@
     <ProductName>SevenZip</ProductName>
     <Copyright>exocad GmbH</Copyright>
 		<Authors>exocad GmbH</Authors>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Company>exocad GmbH</Company>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
 	<PropertyGroup>
