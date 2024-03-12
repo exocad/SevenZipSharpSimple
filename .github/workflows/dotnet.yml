@@ -36,5 +36,5 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: NuGet Publish
-      run: dotnet nuget push src/SevenZip/bin/**/*.nupkg --api-key ${{secrets.GITHUB_TOKEN}} --skip-duplicate --source "github"
+      run: dotnet nuget push src/SevenZip/bin/**/*.nupkg --api-key ${{secrets.GITHUB_TOKEN}} --skip-duplicate --source https://nuget.pkg.github.com/exocad/index.json
       
