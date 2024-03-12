@@ -10,7 +10,7 @@ on Windows and Linux.
 
 ## License
 
-==MIT==
+MIT
 
 ### Notes
 
@@ -28,13 +28,25 @@ which is licensed under public domain. The code from the SDK is located in the
 
 ## Usage
 
-### Reference the project
+### Project Reference
+
+#### Reference the project
 
 Clone the project into any location and add a reference to it.
 
 ```xml
 <ItemGroup>
   <ProjectReference Include="..\..\src\SevenZip\SevenZip.csproj" />
+</ItemGroup>
+```
+
+#### NuGet reference
+
+_Not available yet_
+
+```xml
+<ItemGroup>
+  <PackageReference Include="Exocad.SevenZip" Version="1.0.0" />
 </ItemGroup>
 ```
 
