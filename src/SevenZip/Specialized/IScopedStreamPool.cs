@@ -14,6 +14,9 @@ namespace SevenZip.Specialized;
 /// </summary>
 internal interface IScopedStreamPool : IDisposable
 {
+    /// <summary>
+    /// Gets the maximum capacity of the stream pool.
+    /// </summary>
     int Capacity { get; }
 
     /// <summary>
