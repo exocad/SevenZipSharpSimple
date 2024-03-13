@@ -13,6 +13,6 @@
 		<LangVersion>12</LangVersion>
 		<Platform>x64</Platform>
 		<Platforms>x64</Platforms>
-		<TargetFrameworks>net8.0;net6.0-windows;net48</TargetFrameworks>
+		<TargetFrameworks>net8.0;net6.0;net48</TargetFrameworks>
 	</PropertyGroup>
 </Project>
