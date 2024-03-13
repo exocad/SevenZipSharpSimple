@@ -8,15 +8,19 @@ method.
 The library is written in C# and supports .NET 4.8 and .NET6 on Windows, and .NET 8
 on Windows and Linux.
 
-## License
+## License information
 
 MIT
 
-### Notes
+The following binaries embedded in the NuGet package are licensed under the 
+[GNU LGPL, GNU LGPL with 'unRAR license restrictions' and BSD 3-clause license](https://github.com/exocad/SevenZipSharpSimple/tree/main/runtimes/LICENSE):
 
-This repository contains slightly modified code taken from the original LZMA SDK,
-which is licensed under public domain. The code from the SDK is located in the
-`SevenZip.CoreSdk` namespace.
+- 7z.dll
+- 7z.so
+
+The files located in `src/SevenZip/CoreSdk` where published under [public domain](https://github.com/exocad/SevenZipSharpSimple/tree/main/src/SevenZip/CoreSdk/LICENSE).
+
+All other files are licensed with the [MIT license](https://github.com/exocad/SevenZipSharpSimple/tree/main/LICENSE).
 
 ### References
 
@@ -26,11 +30,32 @@ which is licensed under public domain. The code from the SDK is located in the
   which has been archived, but has some forks which are still being maintained.
   - Most signatures can be obtained from [Wikipedia - List of file signatures](https://en.wikipedia.org/wiki/List_of_file_signatures).
 
-## Usage
+## Limitations
 
-### Project Reference
+- Multi-part archives are not supported. If there is a requirement, this may be added in
+  a future release.
+- Creation of executable archives is not supported.
+- Encryption is not yet fully supported. It can however be set by adding the parameters
+  "he" and/or "em" (for Zip archives only) to the `CompressProperties` class.
 
-#### Reference the project
+## Linux Support
+
+The .NET 8 builds of `SevenZip` can run under Linux. The native 7z Linux
+library was build from the original repository at https://github.com/mcmilk/7-Zip
+by using the following commands:
+
+```bash
+git clone https://github.com/mcmilk/7-Zip.git
+cd 7-zip/CPP/7zip/Bundles/Format7zF
+make -f makefile.gcc
+```
+
+The different bundles and the formats they support are explained here:
+https://github.com/mcmilk/7-Zip/blob/master/DOC/readme.txt.
+
+## Referencing the library
+
+### Project reference
 
 Clone the project into any location and add a reference to it.
 
@@ -39,18 +64,6 @@ Clone the project into any location and add a reference to it.
   <ProjectReference Include="..\..\src\SevenZip\SevenZip.csproj" />
 </ItemGroup>
 ```
-
-#### NuGet reference
-
-_Not available yet_
-
-```xml
-<ItemGroup>
-  <PackageReference Include="Exocad.SevenZip" Version="1.0.0" />
-</ItemGroup>
-```
-
-### Reference the native 7z Library
 
 The native 7z library is part of this repository, but not linked directly by the `SevenZip`
 project. This can be done by importing the `Native7zReferences.target` file in a `.csproj`, or with
@@ -65,6 +78,21 @@ the following snippet:
 
 The path to the native library can however be specified by setting the `ArchiveConfig.NativeLibraryPath`
 property, which is then passed to an `ArchiveReader` or `ArchiveWriter`.
+
+
+#### NuGet reference
+
+_Not available yet_
+
+```xml
+<ItemGroup>
+  <PackageReference Include="Exocad.SevenZip" Version="1.0.0" />
+</ItemGroup>
+```
+
+The NuGet package includes the native libraries, a separate reference is not required.
+
+## Usage
 
 ### Extracting an archive
 
@@ -171,26 +199,4 @@ writer.Compress();
 Once `Compress` has been called, the `ExistingEntries` properties is being updated. In most scenarios,
 the method should only be called once and the `ArchiveWriter` should then be disposed again. However,
 for streams supporting both read and write operations, it may be called multiple times.
-
-## Limitations
-
-- Multi-part archives are not supported. If there is a requirement, this may be added in
-  a future release.
-- Encryption is not yet fully supported. It can however be set by adding the parameters
-  "he" and/or "em" (for Zip archives only) to the `CompressProperties` class.
-
-## Linux Support
-
-The .NET 8 builds of `SevenZip` can run under Linux. The native 7z Linux
-library was build from the original repository at https://github.com/mcmilk/7-Zip
-by using the following commands:
-
-```bash
-git clone https://github.com/mcmilk/7-Zip.git
-cd 7-zip/CPP/7zip/Bundles/Format7zF
-make -f makefile.gcc
-```
-
-The different bundles and the formats they support are explained here:
-https://github.com/mcmilk/7-Zip/blob/master/DOC/readme.txt.
 

@@ -16,8 +16,9 @@
 
 	<ItemGroup>
 		<None Include="$(SolutionDir)README.md" Pack="true" PackagePath="\"/>
-		<None Include="$(SolutionDir)runtimes\win-x64\native\7z.dll" Link="7z.dll" Pack="true" PackagePath="runtimes/win-x64/native" />
-		<None Include="$(SolutionDir)runtimes\linux-x64\native\7z.so" Link="7z.so" Pack="true" PackagePath="runtimes/linux-x64/native" />
+		<None Include="$(SolutionDir)runtimes/LICENSE" Link="runtimes/LICENSE" Pack="true" PackagePath="runtimes" />
+		<None Include="$(SolutionDir)runtimes/win-x64/native/7z.dll" Link="runtimes/win-x64/native/7z.dll" Pack="true" PackagePath="runtimes/win-x64/native" />
+		<None Include="$(SolutionDir)runtimes/linux-x64/native/7z.so" Link="runtimes/linux-x64/native/7z.so" Pack="true" PackagePath="runtimes/linux-x64/native" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="Exists('$(SevenZipSharpSimple_KeyFilePath)')">
