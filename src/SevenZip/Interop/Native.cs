@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -56,10 +57,9 @@ internal static class Native
 
         if (!Path.IsPathRooted(name))
         {
-            var baseDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? string.Empty;
-            var path = Path.Combine(baseDirectory, name);
+            var directory = Path.GetDirectoryName(Assembly.GetEntryAssembly()?.Location) ?? string.Empty;
 
-            if (File.Exists(path))
+            if (TryGetLibraryPath(directory, Path.GetFileName(name), out var path))
             {
                 return NativeLibrary.Load(path);
             }
@@ -82,5 +82,27 @@ internal static class Native
         var function = Marshal.GetDelegateForFunctionPointer<TDelegate>(handle);
 
         return function;
+    }
+
+    private static bool TryGetLibraryPath(string directory, string filename, out string path)
+    {
+        path = Path.Combine(directory, filename);
+
+        if (File.Exists(path))
+        {
+            return true;
+        }
+
+        path = Directory
+            .EnumerateFiles(directory, filename, SearchOption.AllDirectories)
+            .FirstOrDefault();
+
+        if (path != null && File.Exists(path))
+        {
+            return true;
+        }
+
+        path = null;
+        return false;
     }
 }

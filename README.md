@@ -53,11 +53,9 @@ make -f makefile.gcc
 The different bundles and the formats they support are explained here:
 https://github.com/mcmilk/7-Zip/blob/master/DOC/readme.txt.
 
-## Usage
+## Referencing the library
 
-### Project Reference
-
-#### Reference the project
+### Project reference
 
 Clone the project into any location and add a reference to it.
 
@@ -66,18 +64,6 @@ Clone the project into any location and add a reference to it.
   <ProjectReference Include="..\..\src\SevenZip\SevenZip.csproj" />
 </ItemGroup>
 ```
-
-#### NuGet reference
-
-_Not available yet_
-
-```xml
-<ItemGroup>
-  <PackageReference Include="Exocad.SevenZip" Version="1.0.0" />
-</ItemGroup>
-```
-
-### Reference the native 7z Library
 
 The native 7z library is part of this repository, but not linked directly by the `SevenZip`
 project. This can be done by importing the `Native7zReferences.target` file in a `.csproj`, or with
@@ -92,6 +78,21 @@ the following snippet:
 
 The path to the native library can however be specified by setting the `ArchiveConfig.NativeLibraryPath`
 property, which is then passed to an `ArchiveReader` or `ArchiveWriter`.
+
+
+#### NuGet reference
+
+_Not available yet_
+
+```xml
+<ItemGroup>
+  <PackageReference Include="Exocad.SevenZip" Version="1.0.0" />
+</ItemGroup>
+```
+
+The NuGet package includes the native libraries, a separate reference is not required.
+
+## Usage
 
 ### Extracting an archive
 
