@@ -5,6 +5,7 @@
 
 		<PackageId>Exocad.SevenZip</PackageId>
 		<PackageReadMeFile>README.md</PackageReadMeFile>
+		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
 		<Description>
 			A .NET library relying on 7z to create, modify and read different kinds of archives.
 		</Description>
@@ -16,7 +17,8 @@
 
 	<ItemGroup>
 		<None Include="$(SolutionDir)README.md" Pack="true" PackagePath="\"/>
-		<None Include="$(SolutionDir)runtimes/LICENSE" Link="runtimes/LICENSE" Pack="true" PackagePath="runtimes" />
+		<None Include="$(SolutionDir)LICENSE.md" Pack="true" PackagePath="\"/>
+		<None Include="$(SolutionDir)runtimes/LICENSE.md" Link="runtimes/LICENSE.md" Pack="true" PackagePath="runtimes" />
 		<None Include="$(SolutionDir)runtimes/win-x64/native/7z.dll" Link="runtimes/win-x64/native/7z.dll" Pack="true" PackagePath="runtimes/win-x64/native" />
 		<None Include="$(SolutionDir)runtimes/linux-x64/native/7z.so" Link="runtimes/linux-x64/native/7z.so" Pack="true" PackagePath="runtimes/linux-x64/native" />
 	</ItemGroup>
