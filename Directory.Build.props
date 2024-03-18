@@ -1,18 +1,22 @@
 ﻿<Project>
-  <PropertyGroup>
-    <AssemblyVersion>1.0.0</AssemblyVersion>
-    <ProductVersion>1.0.0</ProductVersion>
-    <ProductName>SevenZip</ProductName>
-    <Copyright>exocad GmbH</Copyright>
+	<PropertyGroup>
+		<AssemblyVersion>1.0.0</AssemblyVersion>
+		<ProductVersion>1.0.0</ProductVersion>
+		<ProductName>SevenZip</ProductName>
+		<Copyright>exocad GmbH</Copyright>
 		<Authors>exocad GmbH</Authors>
 		<Company>exocad GmbH</Company>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-  </PropertyGroup>
+
+		<PackageProjectUrl>https://github.com/exocad/SevenZipSharpSimple</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/exocad/SevenZipSharpSimple</RepositoryUrl>
+	</PropertyGroup>
 
 	<PropertyGroup>
 		<LangVersion>12</LangVersion>
 		<Platform>x64</Platform>
 		<Platforms>x64</Platforms>
 		<TargetFrameworks>net8.0;net6.0;net48</TargetFrameworks>
+
+		<UseArtifactsOutput>true</UseArtifactsOutput>
 	</PropertyGroup>
 </Project>
