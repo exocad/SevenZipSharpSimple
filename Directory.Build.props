@@ -1,7 +1,7 @@
 ﻿<Project>
 	<PropertyGroup>
-		<AssemblyVersion>1.0.0</AssemblyVersion>
-		<ProductVersion>1.0.0</ProductVersion>
+		<AssemblyVersion>1.0.1</AssemblyVersion>
+		<ProductVersion>1.0.1</ProductVersion>
 		<ProductName>SevenZip</ProductName>
 		<Copyright>exocad GmbH</Copyright>
 		<Authors>exocad GmbH</Authors>

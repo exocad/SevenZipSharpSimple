@@ -12,7 +12,7 @@
 		<IsPackable>true</IsPackable>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-		<SevenZipSharpSimple_KeyFilePath>$(SolutionDir)..\DentalCAD\snk\DentalConfigKeyPublicPrivate.snk</SevenZipSharpSimple_KeyFilePath>
+		<SevenZipSharpSimple_KeyFilePath>SevenZip.snk</SevenZipSharpSimple_KeyFilePath>
 	</PropertyGroup>
 
 	<ItemGroup>
