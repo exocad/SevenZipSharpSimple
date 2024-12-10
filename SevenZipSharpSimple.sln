@@ -8,9 +8,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".root", ".root", "{2FFF78F1-D3D3-4985-90F3-215CA5889969}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		CHANGELOG.md = CHANGELOG.md
 		Directory.Build.props = Directory.Build.props
-		Native7zReferences.target = Native7zReferences.target
 		LICENSE.md = LICENSE.md
+		Native7zReferences.target = Native7zReferences.target
 		README.md = README.md
 	EndProjectSection
 EndProject
