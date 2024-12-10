@@ -5,9 +5,15 @@
 
 	<Import Project="../../Native7zReferences.target" />
 
-	<ItemGroup>
+  <PropertyGroup>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>$(SolutionDir)src/SevenZip/SevenZip.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <ItemGroup>
 		<None Include="../test-data/archive.zip" Link="test-data/archive.zip" CopyToOutputDirectory="PreserveNewest" />
 		<None Include="../test-data/archive.7z" Link="test-data/archive.7z" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../test-data/absolute-path-traversal.zip" Link="test-data/absolute-path-traversal.zip" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 	<ItemGroup>

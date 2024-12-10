@@ -74,7 +74,7 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtra
             
         return _reader.Entries[(int)index];
     }
-       
+
     private Stream OnGetStream(int index, in ArchiveEntry? entry, out OperationResult result)
     {
         result = OperationResult.Ok;

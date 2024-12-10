@@ -289,11 +289,13 @@ public sealed class ArchiveReader : IDisposable
             Directory.CreateDirectory(targetDir);
         }
 
+        var canonicalTargetDir = Path.GetFullPath(targetDir);
+
         Stream OnGetStream(ArchiveEntry entry)
         {
             // In case any of these operations fail they will be caught within the `IArchiveExtractCallback`
 
-            var path = Path.Combine(targetDir, entry.Path);
+            var path = TargetPath.GetSecureTargetPathOrThrow(canonicalTargetDir, entry, isCanonicalBaseDirectory: true);
             var directory = entry.IsDirectory ? path : Path.GetDirectoryName(path);
 
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))

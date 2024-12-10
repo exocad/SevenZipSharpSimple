@@ -7,6 +7,19 @@ namespace SevenZipTests;
 public class ArchiveReaderTests
 {
     [Fact]
+    public void ExtractZipArchiveWithInsecurePath()
+    {
+        Assert.Throws<IOException>(() =>
+        {
+            using var reader = new ArchiveReader(
+                "test-data/absolute-path-traversal.zip",
+                new Detail.ZipPathTraversalArchiveReaderDelegate());
+
+            reader.ExtractAll("result-zip-path-traversal");
+        });
+    }
+
+    [Fact]
     public void Extract7zArchive_SevenZipSharpSimple()
     {
         var expectedEntryCount = -1L;
