@@ -67,7 +67,7 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtra
 
     private ArchiveEntry? GetArchiveEntry(uint index)
     {
-        if (index >= _reader.Count)
+        if (_reader == null || index >= _reader.Count)
         {
             return null;
         }
@@ -84,7 +84,7 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtra
         }
         catch (Exception ex)
         {
-            _delegate.OnGetStreamFailed(index, entry, ex);
+            _delegate?.OnGetStreamFailed(index, entry, ex);
             result = OperationResult.Unavailable;
             return null;
         }
@@ -184,7 +184,7 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtra
         {
             if (context != null && _index != null)
             {
-                context._delegate.OnExtractOperation((int)_index.Value, context.GetArchiveEntry(_index.Value), _operation, result);
+                context._delegate?.OnExtractOperation((int)_index.Value, context.GetArchiveEntry(_index.Value), _operation, result);
             }
 
             _operation = ExtractOperation.Skip;

@@ -51,5 +51,16 @@ public class ArchiveReaderTests
         Directory.Delete("result-zip-7zs-simple", recursive: true);
  
         Assert.Equal(expectedEntryCount, counter.Result);
-   }
+    }
+
+    [Theory]
+    [InlineData("test-data/archive.zip")]
+    public void CanExtractEntries(string path)
+    {
+        using var reader = new ArchiveReader(path);
+
+        var result = reader.CanExtractEntries();
+
+        Assert.True(result);
+    }
 }
