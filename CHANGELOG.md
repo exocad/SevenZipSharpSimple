@@ -1,5 +1,11 @@
 # SevenZipSharp Changelog
 
+## [1.0.3] - 2025-01-07
+
+### Fixed
+
+- Fixed a NullReferenceException caused by calling `ArchiveReader.CanExtractEntries`.
+
 ## [1.0.2] - 2024-12-10
 
 ### Changed
