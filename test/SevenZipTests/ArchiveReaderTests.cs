@@ -51,5 +51,18 @@ public class ArchiveReaderTests
         Directory.Delete("result-zip-7zs-simple", recursive: true);
  
         Assert.Equal(expectedEntryCount, counter.Result);
-   }
+    }
+
+    [Theory]
+    [InlineData("test-data/archive.zip")]
+    public void CanExtractEntries(string path)
+    {
+        // C:\Users\mkeuck\AppData\Local\Temp\LM\dl\2025-01-07_09-16-15_5540\ZIRKONZAHN All exocad libraries\ZIRKONZAHN All exocad libraries.zip
+
+        using var reader = new ArchiveReader(path);
+
+        var result = reader.CanExtractEntries();
+
+        Assert.True(result);
+    }
 }
