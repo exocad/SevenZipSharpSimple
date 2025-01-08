@@ -17,7 +17,7 @@ public class ArchiveWriterTests
 
     const string SampleTextFileContent = "This is the content of a test file.";
 
-    static byte[] SampleBinaryFileContent = [0x00, 0x01, 0x02, 0x04, 0x05, 0x06];
+    static readonly byte[] SampleBinaryFileContent = [0x00, 0x01, 0x02, 0x04, 0x05, 0x06];
 
     [Theory]
     [InlineData(ArchiveFormat.SevenZip)]

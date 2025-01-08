@@ -142,6 +142,11 @@ public sealed class ArchiveReader : IDisposable
     /// <returns>
     /// <c>true</c> if all entries can be extracted.
     /// </returns>
+    /// <exception cref="ArchiveOperationException">
+    /// Thrown if <see cref="ArchiveConfig.IgnoreOperationErrors"/> is set to <c>false</c> and an
+    /// <see cref="OperationResult"/> other than <see cref="OperationResult.Ok"/> is reported by
+    /// the native library.
+    /// </exception>
     /// <exception cref="ObjectDisposedException">
     /// Thrown if this object has already been disposed.
     /// </exception>
@@ -150,7 +155,7 @@ public sealed class ArchiveReader : IDisposable
         EnsureNotDisposed();
 
         using var guard = new OpenArchiveGuard(_reader, _stream.BaseStream);
-        using var context = new ExtractContext();
+        using var context = new ExtractContext(this);
 
         guard.EnsureOpened();
 
@@ -158,158 +163,55 @@ public sealed class ArchiveReader : IDisposable
     }
 
     /// <summary>
-    /// Extracts a single entry to the given <paramref name="stream"/> stream.
-    /// </summary>
-    /// <param name="index">
-    /// The index of the <see cref="ArchiveEntry"/> to extract.
-    /// </param>
-    /// <param name="stream">
-    /// The stream to extract the entry to.
-    /// </param>
-    /// <param name="flags">
-    /// Additional flags to configure the extraction behavior. See
-    /// <see cref="ArchiveFlags"/> for details.
-    /// </param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown if <paramref name="stream"/> is <c>null</c>.
-    /// </exception>
-    /// <exception cref="ArgumentException">
-    /// Thrown if <paramref name="index"/> is
-    /// out of range or if <paramref name="stream"/> is not writeable.
-    /// </exception>
-    /// <exception cref="ObjectDisposedException">
-    /// Thrown if this object has already been disposed.
-    /// </exception>
-    /// <exception cref="Exception">
-    /// A more generic exception may be thrown when the native library reports an error.
-    /// The <see cref="Exception.HResult"/> property may be used to retrieve the error code.
-    /// </exception>
-    public void Extract(int index, Stream stream, ArchiveFlags flags = ArchiveFlags.None)
-    {
-        EnsureArgumentNotNull(stream, nameof(stream));
-
-        if (stream.CanWrite is false)
-        {
-            throw new ArgumentException("The given output stream must be writeable.");
-        }
-
-        Extract(
-            Enumerable.Repeat(index, 1),
-            entry => entry.Index == index ? stream : null,
-            flags);
-    }
-
-    /// <summary>
-    /// Extracts the given <paramref name="indices"/> to an existing stream which is being returned
-    /// by the <paramref name="onGetStream"/> callback.
+    /// Extracts all entries referenced in <paramref name="indices"/>.
     /// </summary>
     /// <param name="indices">
-    /// A collection of entry indices.
+    /// An <see cref="IndexList"/> containing the indices of the entries to extract, or
+    /// <see cref="IndexList.All"/> to extract all entries.
     /// </param>
-    /// <param name="onGetStream">
-    /// A callback which is invoked to obtain the output stream for
-    /// an archive entry. The stream is then used to write the uncompressed content.</param>
-    /// <param name="flags">Additional flags to configure the extraction behavior. See
-    /// <see cref="ArchiveFlags"/> for details.
-    /// </param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown if <paramref name="indices"/> or <paramref name="onGetStream"/> is <c>null</c>.
-    /// </exception>
-    /// <exception cref="ArgumentException">
-    /// Thrown if any index is out of range.
-    /// </exception>
-    /// <exception cref="ObjectDisposedException">
-    /// Thrown if the object has already been disposed.
-    /// </exception>
-    /// <exception cref="Exception">
-    /// A more generic exception may be thrown when the native library reports an error.
-    /// The <see cref="Exception.HResult"/> property may be used to retrieve the error code.
-    /// </exception>
-    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration", Justification = "The first access only performs a null check.")]
-    public void Extract(IEnumerable<int> indices, Func<ArchiveEntry, Stream> onGetStream, ArchiveFlags flags = ArchiveFlags.None)
-    {
-        EnsureArgumentNotNull(indices, nameof(indices));
-        EnsureNotDisposed();
-        Extract(indices.Select(i => (uint)i).ToArray(), onGetStream, flags);
-    }
-
-    /// <summary>
-    /// Extracts all entries to an existing stream which is being returned by the <paramref name="onGetStream"/>
-    /// callback.
-    /// </summary>
     /// <param name="onGetStream">
     /// A callback which is invoked to obtain the output stream for
     /// an archive entry. The stream is then used to write the uncompressed content.
     /// </param>
     /// <param name="flags">
-    /// Additional flags to configure the extraction behavior. See <see cref="ArchiveFlags"/>
-    /// for details.
+    /// Additional flags to configure the extraction behavior. See
+    /// <see cref="ArchiveFlags"/> for details.
     /// </param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown if  <paramref name="onGetStream"/> is
-    /// <c>null</c>.</exception>
-    /// <exception cref="ArgumentException">Thrown if any index is out of range.</exception>
-    /// <exception cref="ObjectDisposedException">Thrown if the object has already been disposed.</exception>
+    /// 
+    /// <exception cref="ArgumentException">
+    /// Thrown if <paramref name="targetDir"/> is <c>null</c> or empty.</exception>
+    /// <exception cref="IOException">
+    /// Thrown if the given <paramref name="targetDir"/> cannot be created in case it does not yet exist.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown anything else failed during extraction
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// Thrown if the object has already been disposed.
+    /// </exception>
+    /// <exception cref="ArchiveOperationException">
+    /// Thrown if <see cref="ArchiveConfig.IgnoreOperationErrors"/> is set to <c>false</c> and an
+    /// <see cref="OperationResult"/> other than <see cref="OperationResult.Ok"/> is reported by
+    /// the native library.
+    /// </exception>
     /// <exception cref="Exception">
     /// A more generic exception may be thrown when the native library reports an error.
     /// The <see cref="Exception.HResult"/> property may be used to retrieve the error code.
     /// </exception>
-    public void ExtractAll(Func<ArchiveEntry, Stream> onGetStream, ArchiveFlags flags = ArchiveFlags.None)
+    public void Extract(IndexList indices, Func<ArchiveEntry, Stream> onGetStream, ArchiveFlags flags = ArchiveFlags.None)
     {
-        EnsureNotDisposed();
-        Extract(default(uint[]), onGetStream, flags);
-    }
+        EnsureArgumentNotNull(indices, nameof(indices));
+        EnsureArgumentNotNull(onGetStream, nameof(onGetStream));
+        EnsureEntryIndicesAreValid(indices.Values);
 
-    /// <summary>
-    /// Extracts all entries to the given <paramref name="targetDir"/>.
-    /// </summary>
-    /// <param name="targetDir">The directory to create the files in.</param>
-    /// <param name="flags">Additional flags to configure the extraction behavior. See
-    /// <see cref="ArchiveFlags"/> for details.</param>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="targetDir"/> is <c>null</c>
-    /// or empty.</exception>
-    /// <exception cref="IOException">Thrown if the given <paramref name="targetDir"/> cannot
-    /// be created in case it does not yet exist.</exception>
-    /// <exception cref="InvalidOperationException">Thrown anything else failed during
-    /// extraction</exception>
-    /// <exception cref="ObjectDisposedException">Thrown if the object has already been disposed.</exception>
-    /// <exception cref="Exception">
-    /// A more generic exception may be thrown when the native library reports an error.
-    /// The <see cref="Exception.HResult"/> property may be used to retrieve the error code.
-    /// </exception>
-    public void ExtractAll(string targetDir, ArchiveFlags flags = ArchiveFlags.None)
-    {
-        if (string.IsNullOrEmpty(targetDir))
-        {
-            throw new ArgumentException("The given target directory must not be null or empty.");
-        }
+        using var guard = new OpenArchiveGuard(_reader, _stream.BaseStream);
+        using var context = new ExtractContext(this, _delegate, flags, onGetStream);
+        
+        guard.EnsureOpened();
 
-        if (Directory.Exists(targetDir) is false)
-        {
-            Directory.CreateDirectory(targetDir);
-        }
+        var result = _reader.Extract(indices.Values, indices.Length, 0, context);
 
-        var canonicalTargetDir = Path.GetFullPath(targetDir);
-
-        Stream OnGetStream(ArchiveEntry entry)
-        {
-            // In case any of these operations fail they will be caught within the `IArchiveExtractCallback`
-
-            var path = TargetPath.GetSecureTargetPathOrThrow(canonicalTargetDir, entry, isCanonicalBaseDirectory: true);
-            var directory = entry.IsDirectory ? path : Path.GetDirectoryName(path);
-
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            return entry.IsDirectory
-                ? default
-                : File.Open(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
-        }
-
-        EnsureNotDisposed();
-        Extract(default(uint[]), OnGetStream, flags | ArchiveFlags.CloseArchiveEntryStreamAfterExtraction);
+        Marshal.ThrowExceptionForHR(result);
     }
 
     /// <inheritdoc/>
@@ -377,22 +279,6 @@ public sealed class ArchiveReader : IDisposable
         EnsureNotDisposed();
 
         var result = _reader.Extract(indices, (uint)length, 0, context);
-
-        Marshal.ThrowExceptionForHR(result);
-    }
-
-    private void Extract(uint[] indices, Func<ArchiveEntry, Stream> onGetStream, ArchiveFlags flags = ArchiveFlags.None)
-    {
-        EnsureArgumentNotNull(onGetStream, nameof(onGetStream));
-        EnsureEntryIndicesAreValid(indices);
-
-        using var guard = new OpenArchiveGuard(_reader, _stream.BaseStream);
-        using var context = new ExtractContext(this, _delegate, flags, onGetStream);
-        
-        guard.EnsureOpened();
-
-        var length = indices?.Length != null ? (uint)indices.Length : uint.MaxValue;
-        var result = _reader.Extract(indices, length, 0, context);
 
         Marshal.ThrowExceptionForHR(result);
     }

@@ -24,4 +24,25 @@ public enum ArchiveFlags
     /// is set and that the associated stream is a <see cref="System.IO.FileStream"/>.
     /// </summary>
     ApplyArchiveEntryTimestampsToFileStreams = 1 << 1,
+
+    /// <summary>
+    /// Do not overwrite already existing files in the target directory.
+    /// </summary>
+    /// <remarks>
+    /// This flag is only recognized when using an overload of <c>Extract</c> or <c>ExtractAll</c>
+    /// which accepts a target directory. Overloads accepting a <see cref="System.IO.Stream"/>
+    /// or the <see cref="Func{T, TResult}<"/> callback to provide a custom stream ignore this flag.
+    /// </remarks>
+    SkipExistingFilesInTargetDir = 1 << 10,
+
+    /// <summary>
+    /// Strip the directories from an archive path and use only the filename. All entries will
+    /// be written directly to the target directory and no subdirectories will be created.
+    /// </summary>
+    /// <remarks>
+    /// This flag is only recognized when using an overload of <c>Extract</c> or <c>ExtractAll</c>
+    /// which accepts a target directory. Overloads accepting a <see cref="System.IO.Stream"/>
+    /// or the <see cref="Func{T, TResult}<"/> callback to provide a custom stream ignore this flag.
+    /// </remarks>
+    FlattenArchiveEntryPaths = 1 << 11,
 }

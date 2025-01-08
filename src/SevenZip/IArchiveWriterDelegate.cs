@@ -20,7 +20,7 @@ public interface IArchiveWriterDelegate : IProgressDelegate
     /// <summary>
     /// Called when an archive entry has been processed.
     /// </summary>
-    /// <param name="index">The index of the archive entry whose stream could not be created.</param>
+    /// <param name="index">The index of the current <see cref="ArchiveEntry"/>.</param>
     /// <param name="path">The path of the entry within the archive.</param>
     /// <param name="result">The <see cref="OperationResult"/> indicating whether the entry
     /// could be written to the archive or not.</param>

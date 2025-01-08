@@ -123,7 +123,7 @@ public static class ArchiveWriterExtensions
     /// <exception cref="System.Security.SecurityException">
     /// Thrown if the directory or a file cannot be accessed.
     /// </exception>
-    public static IReadOnlyDictionary<string, int> AddDirectory(this ArchiveWriter self, string directory, 
+    public static IReadOnlyDictionary<string, int> AddDirectory(this ArchiveWriter self, string directory,
         NamingStrategy strategy,
         Action<string, Exception> error = null)
     {
@@ -359,7 +359,7 @@ public static class ArchiveWriterExtensions
         return AddDirectoryCore(writer, new PathEnumerator(directory, searchPattern, recursive, strategy), error);
     }
 
-    private static IReadOnlyDictionary<string, int> AddDirectoryCore(ArchiveWriter writer, PathEnumerator enumerator, 
+    private static IReadOnlyDictionary<string, int> AddDirectoryCore(ArchiveWriter writer, PathEnumerator enumerator,
         Action<string, Exception> error = null)
     {
         var result = new Dictionary<string, int>();

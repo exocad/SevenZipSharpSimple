@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net;
 using SevenZip.Interop;
 
 namespace SevenZip;
@@ -43,7 +44,11 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtra
     /// Initializes a new instance of the <see cref="ExtractContext"/> class. This constructor must only
     /// be used for the extraction test mode.
     /// </summary>
-    public ExtractContext() => _onGetStream = _ => null;
+    /// <param name="reader">The archive to work with.</param>
+    public ExtractContext(ArchiveReader reader)
+        : this(reader, null, ArchiveFlags.None, null)
+    {
+    }
 
     /// <inheritdoc />
     public void Dispose()
@@ -56,6 +61,8 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtra
         _disposed = true;
         _state.Reset(OperationResult.Ok, null);
     }
+
+    private bool IgnoreOperationErrors => (_reader?.Config?.IgnoreOperationErrors).GetValueOrDefault(false);
 
     private void EnsureNotDisposed()
     {
@@ -182,15 +189,34 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtra
            
         public void Reset(OperationResult result, ExtractContext context)
         {
-            if (context != null && _index != null)
-            {
-                context._delegate?.OnExtractOperation((int)_index.Value, context.GetArchiveEntry(_index.Value), _operation, result);
-            }
+            ArchiveEntry? currentArchiveEntry = null;
 
-            _operation = ExtractOperation.Skip;
-            _stream?.Dispose();
-            _stream = null;
-            _index = null;
+            try
+            {
+                if (_index != null)
+                {
+                    currentArchiveEntry = context?.GetArchiveEntry(_index.Value);
+                    context?._delegate?.OnExtractOperation((int)_index.Value, currentArchiveEntry, _operation, result);
+                }
+
+                if (context?.IgnoreOperationErrors == false && result != OperationResult.Ok)
+                {
+                    var message = currentArchiveEntry switch
+                    {
+                        { } instance => $"The '{_operation}' operation failed for archive entry {instance.Index} ('{instance.Path}'): {result}" ,
+                        _ => $"The '{_operation}' operation failed: {result}",
+                    };
+
+                    throw new ArchiveOperationException(message, result, currentArchiveEntry);
+                }
+            }
+            finally
+            {
+                _operation = ExtractOperation.Skip;
+                _stream?.Dispose();
+                _stream = null;
+                _index = null;
+            }
         }
     }
     #endregion

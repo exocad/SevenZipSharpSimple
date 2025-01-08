@@ -11,8 +11,8 @@ namespace SevenZip.Detail;
 /// </summary>
 sealed class ArchiveUpdateContext
 {
-    private readonly Dictionary<int, ArchiveUpdateEntry> _entries = new();
-    private readonly List<ArchiveEntry> _existingArchiveEntries = new();
+    private readonly Dictionary<int, ArchiveUpdateEntry> _entries = [];
+    private readonly List<ArchiveEntry> _existingArchiveEntries = [];
     private int _cursor;
 
     /// <summary>

@@ -53,6 +53,8 @@ internal sealed partial class CompressContext : MarshalByRefObject, IArchiveUpda
         }
     }
 
+    private bool IgnoreOperationErrors => (_writer?.Config?.IgnoreOperationErrors).GetValueOrDefault(false);
+
     private void EnsureNotDisposed()
     {
         if (_disposed)
@@ -214,11 +216,6 @@ internal sealed partial class CompressContext : MarshalByRefObject, IArchiveUpda
 
         public void Reset(OperationResult result, CompressContext context, ICollection<ArchiveStream> deferredStreams)
         {
-            if (context != null && _index != null)
-            {
-                context._delegate?.OnCompressOperation((int)_index, _path ?? string.Empty, result);
-            }
-
             if (deferredStreams != null && _stream != null)
             {
                 deferredStreams.Add(_stream);
@@ -228,9 +225,31 @@ internal sealed partial class CompressContext : MarshalByRefObject, IArchiveUpda
                 _stream?.Dispose();
             }
 
-            _path = null;
-            _index = null;
-            _stream = null;
+            try
+            {
+                if (context != null && _index != null)
+                {
+                    context?._delegate?.OnCompressOperation((int)_index, _path ?? string.Empty, result);
+                }
+
+                if (context?.IgnoreOperationErrors == false && result != OperationResult.Ok)
+                {
+                    var info = _path != null ? $" ('{_path}')" : string.Empty;
+                    var message = _index switch
+                    {
+                        { } index => $"The compress operation failed for archive entry {index}{info}: {result}" ,
+                        _ => $"The compress operation failed{info}: {result}",
+                    };
+
+                    throw new ArchiveOperationException(message, result, (int?)_index, _path);
+                }
+            }
+            finally
+            {
+                _path = null;
+                _index = null;
+                _stream = null;
+            }
         }
     }
     #endregion
