@@ -449,6 +449,11 @@ public sealed class ArchiveWriter : IDisposable
     /// <exception cref="ObjectDisposedException">
     /// Thrown if this object has already been disposed.
     /// </exception>
+    /// <exception cref="ArchiveOperationException">
+    /// Thrown if <see cref="ArchiveConfig.IgnoreOperationErrors"/> is set to <c>false</c> and an
+    /// <see cref="OperationResult"/> other than <see cref="OperationResult.Ok"/> is reported by
+    /// the native library.
+    /// </exception>
     /// <exception cref="Exception">
     /// A more generic exception may be thrown when the native library reports an error.
     /// The <see cref="Exception.HResult"/> property may be used to retrieve the error code.

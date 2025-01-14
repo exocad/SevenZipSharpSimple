@@ -9,7 +9,7 @@ public enum OperationResult
     /// The operation succeeded.
     /// </summary>
     Ok,
-        
+
     /// <summary>
     /// The archive entry is compressed with an unsupported compression method (See <see cref="ArchiveEntry.Method"/>).
     /// </summary>
@@ -24,32 +24,32 @@ public enum OperationResult
     /// A CRC error occurred.
     /// </summary>
     CrcError,
-        
+
     /// <summary>
     /// An output stream is not available.
     /// </summary>
     Unavailable,
-        
+
     /// <summary>
     /// The archive could not be read completely.
     /// </summary>
     UnexpectedEnd,
-        
+
     /// <summary>
     /// Data was read after the end of a stream.
     /// </summary>
     DataAfterEnd,
-        
+
     /// <summary>
     /// The input stream does not represent a supported or valid archive.
     /// </summary>
     IsNotArc,
-        
+
     /// <summary>
     /// The archive headers could not be read.
     /// </summary>
     HeadersError,
-        
+
     /// <summary>
     /// The provided password is incorrect.
     /// </summary>

@@ -8,9 +8,11 @@ namespace SevenZip;
 /// </summary>
 public sealed class ArchiveWriterDelegate : IArchiveWriterDelegate
 {
-    private readonly Action<int, string, Exception> _onGetStreamFailed;
-    private readonly Action<int, string, OperationResult> _onCompressOperation;
-    private readonly Action<ulong, ulong> _onProgress;
+    private readonly Action<ICompressContext, int, string, Exception> _onGetStreamFailed;
+    private readonly Action<ICompressContext, int, string, OperationResult> _onCompressOperation;
+    private readonly Action<ICompressContext, ulong, ulong> _onProgress;
+    private readonly Action<ICompressContext> _onProgressBegin;
+    private readonly Action<ICompressContext> _onProgressEnd;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ArchiveWriterDelegate"/> class.
@@ -28,27 +30,40 @@ public sealed class ArchiveWriterDelegate : IArchiveWriterDelegate
     /// <param name="onProgress">
     /// This callback is invoked when a progress is being reported.
     /// </param>
-    public ArchiveWriterDelegate(Action<int, string, Exception> onGetStreamFailed = null,
-        Action<int, string, OperationResult> onCompressOperation = null,
-        Action<ulong, ulong> onProgress = null)
+    /// <param name="onProgressBegin">This callback is invoked when a new extract or compress operation has been initiated.</param>
+    /// <param name="onProgressEnd">This callback is invoked when an extract or a compress operation has completed.</param>
+    public ArchiveWriterDelegate(
+        Action<ICompressContext, int, string, Exception> onGetStreamFailed = null,
+        Action<ICompressContext, int, string, OperationResult> onCompressOperation = null,
+        Action<ICompressContext, ulong, ulong> onProgress = null,
+        Action<ICompressContext> onProgressBegin = null,
+        Action<ICompressContext> onProgressEnd = null)
     {
         _onGetStreamFailed = onGetStreamFailed;
         _onCompressOperation = onCompressOperation;
         _onProgress = onProgress;
+        _onProgressBegin = onProgressBegin;
+        _onProgressEnd = onProgressEnd;
     }
 
     internal static IArchiveWriterDelegate Default { get; } = new ArchiveWriterDelegate();
 
     #region IProgressDelegate
-    void IProgressDelegate.OnProgress(ulong current, ulong total) =>
-        _onProgress?.Invoke(current, total);
+    void IProgressDelegate<ICompressContext>.OnProgress(ICompressContext context, ulong current, ulong total) =>
+        _onProgress?.Invoke(context, current, total);
+
+    void IProgressDelegate<ICompressContext>.OnProgressBegin(ICompressContext context) =>
+        _onProgressBegin?.Invoke(context);
+
+    void IProgressDelegate<ICompressContext>.OnProgressEnd(ICompressContext context) =>
+        _onProgressEnd?.Invoke(context);
     #endregion
 
     #region IArchiveWriterDelegate
-    void IArchiveWriterDelegate.OnGetStreamFailed(int index, string path, Exception ex) =>
-        _onGetStreamFailed?.Invoke(index, path, ex);
+    void IArchiveWriterDelegate.OnGetStreamFailed(ICompressContext context, int index, string path, Exception ex) =>
+        _onGetStreamFailed?.Invoke(context, index, path, ex);
 
-    void IArchiveWriterDelegate.OnCompressOperation(int index, string path, OperationResult result) =>
-        _onCompressOperation?.Invoke(index, path, result);
+    void IArchiveWriterDelegate.OnCompressOperation(ICompressContext context, int index, string path, OperationResult result) =>
+        _onCompressOperation?.Invoke(context, index, path, result);
     #endregion
 }

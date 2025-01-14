@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using SevenZip;
 using Xunit;
 
 namespace SevenZipTests;
@@ -12,7 +11,7 @@ public class TargetPathTests
     [InlineData(@"C:\data\..\somewhere\..\..\anywhere\", @"anywhere\")]
     public void TestSanitize(string archiveEntryPath, string expected)
     {
-        var target = SevenZip.Detail.TargetPath.Sanitize(CreateArchiveEntry(archiveEntryPath));
+        var target = SevenZip.Detail.TargetPath.Sanitize(archiveEntryPath);
 
         Assert.Equal(expected, target);
     }
@@ -25,7 +24,7 @@ public class TargetPathTests
     {
         Assert.ThrowsAny<IOException>(() =>
         {
-            SevenZip.Detail.TargetPath.GetSecureTargetPathOrThrow(baseDir, CreateArchiveEntry(archiveEntryPath), false);
+            SevenZip.Detail.TargetPath.GetSecureTargetPathOrThrow(baseDir, archiveEntryPath, false);
         });
     }
 
@@ -33,19 +32,14 @@ public class TargetPathTests
     [InlineData("C:\\", "C:\\targetdir\\filename.exe")]
     [InlineData("C:\\", ".\\filename.exe")]
     [InlineData("C:\\", "filename.exe")]
+    [InlineData("C:\\subdir", "C:\\subdir\\targetdir\\filename.exe")]
+    [InlineData("C:\\subdir", ".\\filename.exe")]
+    [InlineData("C:\\subdir", "filename.exe")]
     public void TestGetSecureTargetPathOrThrow(string baseDir, string archiveEntryPath)
     {
         var canonicalBaseDir = Path.GetFullPath(baseDir);
-        var path = SevenZip.Detail.TargetPath.GetSecureTargetPathOrThrow(baseDir, CreateArchiveEntry(archiveEntryPath), false);
+        var path = SevenZip.Detail.TargetPath.GetSecureTargetPathOrThrow(baseDir, archiveEntryPath, false);
 
         Assert.StartsWith(canonicalBaseDir, path);
-    }
-
-    private static ArchiveEntry CreateArchiveEntry(string path)
-    {
-        return new ArchiveEntry()
-        {
-            Path = path,
-        };
     }
 }

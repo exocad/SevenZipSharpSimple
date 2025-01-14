@@ -11,9 +11,9 @@ namespace SevenZip.Detail;
 /// It provides a <c>Dispose</c> method to allow using the <c>using</c> pattern
 /// to securely free allocated resources.
 /// </summary>
-internal ref struct GcHandleGuard
+internal readonly ref struct GcHandleGuard
 {
-    private GCHandle _handle;
+    private readonly GCHandle _handle;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="GcHandleGuard"/> struct.

@@ -19,6 +19,24 @@ public sealed class ArchiveConfig
     /// Initializes a new instance of the <see cref="ArchiveConfig"/> class.
     /// </summary>
     /// <param name="password">The password to set.</param>
+    /// <param name="ignoreOperationErrors">
+    /// Set to <c>false</c> to throw an exception whenever an operation of any entry 
+    /// reports a result different than <see cref="OperationResult.Ok"/>.
+    /// 
+    /// See <see cref="IgnoreOperationErrors"/> for details.
+    /// </param>
+    /// <param name="nativeLibraryPath">The native library path. If empty or <c>null</c>,
+    /// <see cref="NativeLibraryPath"/> will be set to <c>7z.dll</c>.</param>
+    public ArchiveConfig(string password, bool ignoreOperationErrors, string nativeLibraryPath = null)
+        : this(password, nativeLibraryPath)
+    {
+        IgnoreOperationErrors = ignoreOperationErrors;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ArchiveConfig"/> class.
+    /// </summary>
+    /// <param name="password">The password to set.</param>
     /// <param name="nativeLibraryPath">The native library path. If empty or <c>null</c>,
     /// <see cref="NativeLibraryPath"/> will be set to <c>7z.dll</c>.</param>
     public ArchiveConfig(string password, string nativeLibraryPath = null)
@@ -26,6 +44,19 @@ public sealed class ArchiveConfig
         Password = password;
         NativeLibraryPath = string.IsNullOrEmpty(nativeLibraryPath) ? Default.NativeLibraryPath : nativeLibraryPath;
     }
+
+    /// <summary>
+    /// Gets a value indicating whether an exception of type <see cref="ArchiveOperationException"/> shall be thrown
+    /// whenever the library reports an <see cref="OperationResult"/> other than <see cref="OperationResult.Ok"/>
+    /// for the current archive entry.
+    /// 
+    /// The default value is <c>false</c>.
+    /// </summary>
+    /// <remarks>
+    /// To throw only on specific results, a custom <see cref="IArchiveReaderDelegate"/> or <see cref="IArchiveWriterDelegate"/>
+    /// can be used.
+    /// </remarks>
+    public bool IgnoreOperationErrors { get; init; } = false;
 
     /// <summary>
     /// Gets or sets the archive password.
@@ -60,6 +91,7 @@ public sealed class ArchiveConfig
         return new ArchiveConfig()
         {
             NativeLibraryPath = string.IsNullOrEmpty(config.NativeLibraryPath) ? Default.NativeLibraryPath : config.NativeLibraryPath,
+            IgnoreOperationErrors = config.IgnoreOperationErrors,
             Password = config.Password,
         };
     }
