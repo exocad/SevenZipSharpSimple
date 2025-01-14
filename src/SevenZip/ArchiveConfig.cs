@@ -47,7 +47,8 @@ public sealed class ArchiveConfig
 
     /// <summary>
     /// Gets a value indicating whether an exception of type <see cref="ArchiveOperationException"/> shall be thrown
-    /// whenever the library reports an <see cref="OperationResult"/> other than <see cref="OperationResult.Ok"/>.
+    /// whenever the library reports an <see cref="OperationResult"/> other than <see cref="OperationResult.Ok"/>
+    /// for the current archive entry.
     /// 
     /// The default value is <c>false</c>.
     /// </summary>

@@ -1,7 +1,7 @@
 ﻿namespace SevenZip;
 
 /// <summary>
-/// Enumeration listing the supporting naming strategies to create an archive path
+/// Enumeration listing the supported naming strategies to create an archive path
 /// from a file path.
 /// </summary>
 public enum NamingStrategy

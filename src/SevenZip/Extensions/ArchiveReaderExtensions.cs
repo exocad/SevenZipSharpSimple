@@ -107,7 +107,7 @@ public static class ArchiveReaderExtensions
     }
 
     /// <summary>
-    /// Extracts a the entries specified by <paramref name="indices"/> to the given <paramref name="targetDir"/>.
+    /// Extracts the entries specified by <paramref name="indices"/> to the given <paramref name="targetDir"/>.
     /// </summary>
     /// <param name="self">
     /// The <see cref="ArchiveReader"/> instance calling this extension.

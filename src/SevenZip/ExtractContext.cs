@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Net;
 using SevenZip.Interop;
 
 namespace SevenZip;
@@ -13,7 +12,7 @@ namespace SevenZip;
 #if NET8_0_OR_GREATER
 [System.Runtime.InteropServices.Marshalling.GeneratedComClass]
 #endif
-internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtractCallback, IPasswordProvider, IDisposable
+internal sealed partial class ExtractContext : MarshalByRefObject, IExtractContext, IArchiveExtractCallback, IPasswordProvider, IDisposable
 {
     private readonly CurrentEntry _state = new();
     private readonly IArchiveReaderDelegate _delegate;
@@ -36,8 +35,9 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtra
     {
         _flags = flags;
         _reader = reader;
-        _delegate = @delegate;
         _onGetStream = onGetStream;
+        _delegate = @delegate;
+        _delegate?.OnProgressBegin(this);
     }
 
     /// <summary>
@@ -57,7 +57,8 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtra
         {
             return;
         }
-            
+
+        _delegate?.OnProgressEnd(this);
         _disposed = true;
         _state.Reset(OperationResult.Ok, null);
     }
@@ -91,7 +92,7 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtra
         }
         catch (Exception ex)
         {
-            _delegate?.OnGetStreamFailed(index, entry, ex);
+            _delegate?.OnGetStreamFailed(this, index, entry, ex);
             result = OperationResult.Unavailable;
             return null;
         }
@@ -112,6 +113,10 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtra
         };
     }
 
+    #region IExtractContext
+    ArchiveReader IExtractContext.ArchiveReader => _reader;
+    #endregion
+
     #region IArchiveExtractCallback
     void IArchiveExtractCallback.SetTotal(ulong total)
     {
@@ -120,7 +125,7 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtra
 
     void IArchiveExtractCallback.SetCompleted(ref ulong completeValue)
     {
-        _delegate?.OnProgress(completeValue, _total);
+        _delegate?.OnProgress(this, completeValue, _total);
     }
 
     int IArchiveExtractCallback.GetStream(uint index, out ISequentialOutputStream output, ExtractOperation operation)
@@ -186,7 +191,7 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtra
 
         public void Set(uint index, ExtractOperation operation, ArchiveStream stream) =>
             (_index, _operation, _stream) = (index, operation, stream);
-           
+
         public void Reset(OperationResult result, ExtractContext context)
         {
             ArchiveEntry? currentArchiveEntry = null;
@@ -196,7 +201,7 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IArchiveExtra
                 if (_index != null)
                 {
                     currentArchiveEntry = context?.GetArchiveEntry(_index.Value);
-                    context?._delegate?.OnExtractOperation((int)_index.Value, currentArchiveEntry, _operation, result);
+                    context?._delegate?.OnExtractOperation(context, (int)_index.Value, currentArchiveEntry, _operation, result);
                 }
 
                 if (context?.IgnoreOperationErrors == false && result != OperationResult.Ok)

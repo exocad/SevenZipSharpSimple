@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 using SevenZip;
 using Xunit;
 
@@ -52,6 +47,5 @@ public class ArchiveWriterTests
             File.Delete(SampleTextFilePath);
             File.Delete("writer-test.archive");
         }
-
     }
 }

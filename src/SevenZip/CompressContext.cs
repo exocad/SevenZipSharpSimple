@@ -12,7 +12,7 @@ namespace SevenZip;
 #if NET8_0_OR_GREATER
 [System.Runtime.InteropServices.Marshalling.GeneratedComClass]
 #endif
-internal sealed partial class CompressContext : MarshalByRefObject, IArchiveUpdateCallback, IPasswordProvider, IPasswordProvider2, IDisposable
+internal sealed partial class CompressContext : MarshalByRefObject, ICompressContext, IArchiveUpdateCallback, IPasswordProvider, IPasswordProvider2, IDisposable
 {
     private readonly CurrentEntry _state = new();
     private readonly IArchiveWriterDelegate _delegate;
@@ -29,10 +29,9 @@ internal sealed partial class CompressContext : MarshalByRefObject, IArchiveUpda
     public CompressContext(ArchiveWriter writer, IArchiveWriterDelegate @delegate)
     {
         _writer = writer;
+        _deferredStreams = CanDisposeStreamImmediately(writer.ArchiveFormat) ? null : [];
         _delegate = @delegate;
-        _deferredStreams = CanDisposeStreamImmediately(writer.ArchiveFormat)
-            ? null
-            : new List<ArchiveStream>();
+        _delegate?.OnProgressBegin(this);
     }
 
     /// <inheritdoc />
@@ -43,6 +42,7 @@ internal sealed partial class CompressContext : MarshalByRefObject, IArchiveUpda
             return;
         }
 
+        _delegate?.OnProgressEnd(this);
         _disposed = true;
         _state.Reset(OperationResult.Ok, null, _deferredStreams);
 
@@ -65,6 +65,10 @@ internal sealed partial class CompressContext : MarshalByRefObject, IArchiveUpda
 
     private static bool CanDisposeStreamImmediately(ArchiveFormat format) => format != ArchiveFormat.Zip;
 
+    #region ICompressContext
+    ArchiveWriter ICompressContext.ArchiveWriter => _writer;
+    #endregion
+
     #region IArchiveUpdateCallback
     void IArchiveUpdateCallback.SetTotal(ulong total)
     {
@@ -73,7 +77,7 @@ internal sealed partial class CompressContext : MarshalByRefObject, IArchiveUpda
 
     void IArchiveUpdateCallback.SetCompleted(ref ulong completeValue)
     {
-        _delegate?.OnProgress(completeValue, _total);
+        _delegate?.OnProgress(this, completeValue, _total);
     }
 
     int IArchiveUpdateCallback.GetUpdateItemInfo(uint index, ref int newData, ref int newProperties, ref uint indexInArchive)
@@ -163,7 +167,7 @@ internal sealed partial class CompressContext : MarshalByRefObject, IArchiveUpda
                 stream = null;
                 reader = null;
 
-                _delegate?.OnGetStreamFailed((int)index, entry.ArchivePath, ex);
+                _delegate?.OnGetStreamFailed(this, (int)index, entry.ArchivePath, ex);
             }
         }
 
@@ -229,7 +233,7 @@ internal sealed partial class CompressContext : MarshalByRefObject, IArchiveUpda
             {
                 if (context != null && _index != null)
                 {
-                    context?._delegate?.OnCompressOperation((int)_index, _path ?? string.Empty, result);
+                    context?._delegate?.OnCompressOperation(context, (int)_index, _path ?? string.Empty, result);
                 }
 
                 if (context?.IgnoreOperationErrors == false && result != OperationResult.Ok)
