@@ -22,6 +22,9 @@ public enum ArchiveFlags
     /// Apply the original timestamps stored in the archive to extracted
     /// files. This flag requires that <see cref="CloseArchiveEntryStreamAfterExtraction"/>
     /// is set and that the associated stream is a <see cref="System.IO.FileStream"/>.
+    /// 
+    /// In cases where the archive entry does not contain a timestamp (<see cref="DateTime.MinValue"/>),
+    /// the file property is not being updated.
     /// </summary>
     ApplyArchiveEntryTimestampsToFileStreams = 1 << 1,
 

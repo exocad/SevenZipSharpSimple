@@ -159,9 +159,7 @@ internal readonly struct Union
     /// is not compatible, <see cref="DateTime.Now"/> is being returned.</returns>
     public DateTime AsDateTime() => Type switch
     {
-        VarEnum.VT_FILETIME => DateTime.FromFileTime(_int64),
-        VarEnum.VT_I8 => DateTime.FromFileTime(_int64),
-        VarEnum.VT_UI8 => DateTime.FromFileTime(_int64),
+        VarEnum.VT_FILETIME or VarEnum.VT_I8 or VarEnum.VT_UI8 => _int64 > 0 ? DateTime.FromFileTime(_int64) : DateTime.MinValue,
         _ => DateTime.UtcNow
     };
 
