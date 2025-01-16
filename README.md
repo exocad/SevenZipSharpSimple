@@ -35,8 +35,9 @@ All other files are licensed with the [MIT license](https://github.com/exocad/Se
 - Multi-part archives are not supported. If there is a requirement, this may be added in
   a future release.
 - Creation of executable archives is not supported.
-- Encryption is not yet fully supported. It can however be set by adding the parameters
-  "he" and/or "em" (for Zip archives only) to the `CompressProperties` class.
+- Not all format specific compression options like encryption can be configured via properties. However, it is possible
+  to pass the command line options like "he" and/or "em" (for Zip archives only) to the `CompressProperties` class.
+  The parameters can be found in [this manual](https://7zip.bugaco.com/7zip/MANUAL/cmdline/switches/method.htm).
 
 ## Linux Support
 

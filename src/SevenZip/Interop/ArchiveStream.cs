@@ -79,6 +79,11 @@ class ArchiveStream : IInputStream, IOutputStream, IDisposable
 
         static void TrySetFileTime(string path, DateTime time, Action<string, DateTime> method)
         {
+            if (time == DateTime.MinValue)
+            {
+                return;
+            }
+
             try
             {
                 method(path, time);

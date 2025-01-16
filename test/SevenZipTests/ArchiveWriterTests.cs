@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using SevenZip;
 using Xunit;
 
@@ -48,4 +49,49 @@ public class ArchiveWriterTests
             File.Delete("writer-test.archive");
         }
     }
+
+    [Theory]
+    [InlineData(ArchiveFormat.Zip, EncryptionMethod.Aes256, "test", "AES-256 Store")]
+    [InlineData(ArchiveFormat.Zip, EncryptionMethod.Aes192, "test", "AES-192 Store")]
+    [InlineData(ArchiveFormat.Zip, EncryptionMethod.Aes128, "test", "AES-128 Store")]
+    public void CreateEncryptedArchive(ArchiveFormat format, EncryptionMethod encryptionMethod, string key, string expectedMethodString)
+    {
+         File.WriteAllText(SampleTextFilePath, SampleTextFileContent);
+
+        var archivePath = $"writer-test-{encryptionMethod}.{format}";
+        var p = System.IO.Path.GetFullPath(archivePath);
+        try
+        {
+            using (var writer = new ArchiveWriter(format, archivePath, config: new ArchiveConfig(password: key)))
+            {
+                writer.AddFile("dir/file1.txt", SampleTextFilePath);
+                writer.AddFile("dir/file2.bin", new MemoryStream(SampleBinaryFileContent), leaveOpen: false);
+                writer.Compress(new CompressProperties()
+                {
+                    CompressionLevel = CompressionLevel.Ultra,
+                    EncryptionMethod = encryptionMethod,
+                });
+            }
+
+            using (var reader = new ArchiveReader(archivePath, config: new ArchiveConfig(password: key)))
+            {
+                var entries = reader.Entries;
+
+                Assert.Equal(2, entries.Count);
+
+                foreach (var entry in entries)
+                {
+                    Assert.True(entry.UncompressedSize > 0UL);
+                    Assert.True(entry.Path is "dir\\file1.txt" or "dir\\file2.bin");
+
+                    Assert.Contains(expectedMethodString, entry.Method);
+                }
+            }
+        }
+        finally
+        {
+            File.Delete(SampleTextFilePath);
+            File.Delete(archivePath);
+        }
+   }
 }

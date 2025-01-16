@@ -1,5 +1,17 @@
 # SevenZipSharp Changelog
 
+## [2.0.1] - 2025-01-16
+
+### Changed
+
+- Added a `EncryptionMethod` property to the `CompressProperties` class to simplify creating encrypted archives.
+- The `ApplyArchiveEntryTimestampsToFileStreams` flag no longer updates a files' timestamp when the archive entry reports a timestamp of `DateTime.MinValue`.
+
+### Fixed
+
+- The .NET8 build now correctly applies custom compression properties. This operation failed due to a missing `GeneratedComInterface`
+  attribute.
+
 ## [2.0.0] - 2025-01-14
 
 ### Changed
