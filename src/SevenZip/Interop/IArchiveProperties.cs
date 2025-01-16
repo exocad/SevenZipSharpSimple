@@ -11,10 +11,15 @@ namespace SevenZip.Interop;
 /// <remarks>
 /// https://github.com/mcmilk/7-Zip/blob/826145b86107fc0a778ac673348226db180e4532/CPP/7zip/Archive/IArchive.h#L537
 /// </remarks>
-[ComImport]
 [Guid("23170F69-40C1-278A-0000-000600030000")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-internal interface IArchiveProperties
+#if NET8_0_OR_GREATER
+[System.Runtime.InteropServices.Marshalling.GeneratedComInterface]
+partial
+#else
+[ComImport]
+#endif
+interface IArchiveProperties
 {
     /// <summary>
     /// Forwards the properties to the native library. Any allocated memory must be freed

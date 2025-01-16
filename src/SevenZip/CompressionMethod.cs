@@ -3,6 +3,11 @@
 /// <summary>
 /// Enumeration listing the supported compression methods.
 /// </summary>
+/// <remarks>
+/// The compression method is configured via the archive property <c>m</c>
+/// for Zip archives and <c>0</c> for all others. Not all methods are
+/// supported by all archive types.
+/// </remarks>
 public enum CompressionMethod
 {
     /// <summary>

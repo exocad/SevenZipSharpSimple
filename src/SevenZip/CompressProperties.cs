@@ -7,18 +7,28 @@ namespace SevenZip;
 
 /// <summary>
 /// Optional settings that may be used to configure the compression operation.
+/// 
+/// <para>
+/// An overview of possible options can be found on the following page: https://7zip.bugaco.com/7zip/MANUAL/cmdline/switches/method.htm.
+/// </para>
 /// </summary>
 public sealed class CompressProperties
 {
     /// <summary>
-    /// Gets the <see cref="CompressionLevel"/> to use or <c>null</c>, to use the default.
+    /// Gets the <see cref="SevenZip.CompressionLevel"/> to use or <c>null</c>, to use the default.
     /// </summary>
     public CompressionLevel? CompressionLevel { get; init; }
 
     /// <summary>
-    /// Gets the <see cref="CompressionMethod"/> to use or <c>null</c>, to use the default.
+    /// Gets the <see cref="SevenZip.CompressionMethod"/> to use or <c>null</c>, to use the default.
     /// </summary>
     public CompressionMethod? CompressionMethod { get; init; }
+
+    /// <summary>
+    /// Gets the <see cref="SevenZip.EncryptionMethod"/> to use. This property is only
+    /// recognized when creating Zip archives.
+    /// </summary>
+    public EncryptionMethod? EncryptionMethod { get; init; }
 
     /// <summary>
     /// Gets a dictionary which may contain format-specific parameters.
@@ -42,7 +52,7 @@ public sealed class CompressProperties
             return;
         }
 
-        var count = 2 + (Parameters?.Count ?? 0);
+        var count = 3 + (Parameters?.Count ?? 0);
         var index = 0;
         var names = new IntPtr[count];
         var values = new Union[count];
@@ -65,6 +75,13 @@ public sealed class CompressProperties
 
                     index++;
                 }
+            }
+
+            if (EncryptionMethod is { } encryption && format == ArchiveFormat.Zip)
+            {
+                names[index] = StringMarshal.ManagedStringToBinaryString("em");
+                values[index] = Union.Create(EncryptionMethodToString(encryption));
+                index++;
             }
 
             if (CompressionMethod is { } method and not SevenZip.CompressionMethod.Default &&
@@ -93,6 +110,15 @@ public sealed class CompressProperties
             Array.ForEach(values, value => value.Free());
         }
     }
+
+    private static string EncryptionMethodToString(EncryptionMethod method) => method switch
+    {
+        SevenZip.EncryptionMethod.ZipCrypto => "ZipCrypto",
+        SevenZip.EncryptionMethod.Aes128 => "AES128",
+        SevenZip.EncryptionMethod.Aes192 => "AES192",
+        SevenZip.EncryptionMethod.Aes256 => "AES256",
+        _ => string.Empty,
+    };
 
     private static uint CompressionLevelToUInt32(CompressionLevel level) => level switch
     {
