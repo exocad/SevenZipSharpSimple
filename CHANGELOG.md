@@ -1,5 +1,14 @@
 # SevenZipSharp Changelog
 
+## [2.1.1] - 2025-
+
+- Encrypted archives are now also supported on Linux. The PasswordProvider interfaces now pass a
+  native pointer instead of a marshalled string which allows allocating the string the way the
+  used implementation needs it, based on the current OS.
+- An exception is now thrown when applying the `CompressProperties` fails.
+
+### Changed
+
 ## [2.1.0] - 2025-02-18
 
 ### Changed

@@ -184,22 +184,22 @@ internal sealed partial class CompressContext : MarshalByRefObject, ICompressCon
     #endregion
 
     #region IPasswordProvider
-    int IPasswordProvider.CryptoGetPassword(out string password)
+    int IPasswordProvider.CryptoGetPassword(out nint password)
     {
         EnsureNotDisposed();
 
-        password = _writer.Config.Password;
+        password = StringMarshal.ManagedStringToBinaryString(_writer?.Config?.Password);
         return 0;
     }
     #endregion
 
     #region IPasswordProvider2
-    int IPasswordProvider2.CryptoGetTextPassword2(ref int passwordIsDefined, out string password)
+    int IPasswordProvider2.CryptoGetTextPassword2(ref int passwordIsDefined, out nint password)
     {
         EnsureNotDisposed();
 
-        passwordIsDefined = string.IsNullOrEmpty(_writer.Config.Password) ? 0 : 1;
-        password = _writer.Config.Password;
+        password = StringMarshal.ManagedStringToBinaryString(_writer?.Config?.Password);
+        passwordIsDefined = password != IntPtr.Zero ? 1 : 0;
         return 0;
     }
     #endregion

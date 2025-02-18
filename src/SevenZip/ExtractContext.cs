@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using SevenZip.Detail;
 using SevenZip.Interop;
 
 namespace SevenZip;
@@ -173,11 +174,11 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IExtractConte
     #endregion
 
     #region IPasswordProvider
-    int IPasswordProvider.CryptoGetPassword(out string password)
+    int IPasswordProvider.CryptoGetPassword(out nint password)
     {
         EnsureNotDisposed();
 
-        password = _reader?.Config?.Password;
+        password = StringMarshal.ManagedStringToBinaryString(_reader?.Config?.Password);
         return 0;
     }
     #endregion

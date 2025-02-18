@@ -26,11 +26,12 @@ interface IPasswordProvider2
     /// If a password exists, this value must be set to 1. Otherwise, it must be set to zero.
     /// </param>
     /// <param name="password">
-    /// If a password is set, it must be stored in this <c>out</c> parameter.
+    /// If a password is set, a new buffer containing the password must be assigned to this parameter.
+    /// The caller is responsible for freeing the buffer again.
     /// </param>
     /// <returns>
     /// A value of zero (0) on success, an error code otherwise.
     /// </returns>
     [PreserveSig]
-    int CryptoGetTextPassword2(ref int passwordIsDefined, [MarshalAs(UnmanagedType.BStr)] out string password);
+    int CryptoGetTextPassword2(ref int passwordIsDefined, out nint password);
 }
