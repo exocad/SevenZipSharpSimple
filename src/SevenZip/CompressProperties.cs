@@ -31,6 +31,12 @@ public sealed class CompressProperties
     public EncryptionMethod? EncryptionMethod { get; init; }
 
     /// <summary>
+    /// Gets the multithreading behavior. If not specified, the 7z default value is used.
+    /// See <see cref="SevenZip.MultithreadingBehavior"/> for details.
+    /// </summary>
+    public MultithreadingBehavior? MultithreadingBehavior { get; init; }
+
+    /// <summary>
     /// Gets a dictionary which may contain format-specific parameters.
     /// </summary>
     public IDictionary<string, string> Parameters { get; init; }
@@ -52,62 +58,78 @@ public sealed class CompressProperties
             return;
         }
 
-        var count = 3 + (Parameters?.Count ?? 0);
-        var index = 0;
-        var names = new IntPtr[count];
-        var values = new Union[count];
+        var options = new List<(string name, Union value)>();
+
+        if (Parameters != null)
+        {
+            foreach (var pair in Parameters)
+            {
+                var name = pair.Key;
+                var value = uint.TryParse(pair.Value, out var number) switch
+                {
+                    true => Union.Create(number),
+                    _ => Union.Create(pair.Value)
+                };
+
+                options.Add((name, value));
+            }
+        }
+
+        if (EncryptionMethod is { } encryption && format == ArchiveFormat.Zip)
+        {
+            options.Add(("em", Union.Create(EncryptionMethodToString(encryption))));
+        }
+
+        if (CompressionMethod is { } method and not SevenZip.CompressionMethod.Default &&
+            CanUseCompressionMethod(method, format))
+        {
+            var name = format == ArchiveFormat.SevenZip ? "0" : "m";
+
+            options.Add((name, Union.Create(CompressionMethodToString(method))));
+        }
+
+        if (CompressionLevel is { } level)
+        {
+            options.Add(("x", Union.Create(CompressionLevelToUInt32(level))));
+        }
+
+        if (MultithreadingBehavior is { } multithreadingBehavior)
+        {
+            var value = multithreadingBehavior.Value switch
+            {
+                uint threadCount => Union.Create(threadCount),
+                null => Union.Create("off"),
+            };
+
+            options.Add(("mt", value));
+        }
+
+        ApplyCore(setter, options);
+    }
+
+    private static void ApplyCore(IArchiveProperties setter, IReadOnlyList<(string name, Union value)> options)
+    {
+        var count = options.Count;
+        
+        using var names = new NativeArray<nint>(count, IntPtr.Size);
+        using var values = new NativeArray<Union>(count, Union.Size);
+
         try
         {
-            if (Parameters != null)
+            for (var i = 0; i < count; ++i)
             {
-                foreach (var pair in Parameters)
-                {
-                    names[index] = StringMarshal.ManagedStringToBinaryString(pair.Key);
+                var (name, value) = options[i];
 
-                    if (uint.TryParse(pair.Value, out var value))
-                    {
-                        values[index] = Union.Create(value);
-                    }
-                    else
-                    {
-                        values[index] = Union.Create(pair.Value);
-                    }
-
-                    index++;
-                }
+                names[i] = StringMarshal.ManagedStringToBinaryString(name);
+                values[i] = value;
             }
 
-            if (EncryptionMethod is { } encryption && format == ArchiveFormat.Zip)
-            {
-                names[index] = StringMarshal.ManagedStringToBinaryString("em");
-                values[index] = Union.Create(EncryptionMethodToString(encryption));
-                index++;
-            }
-
-            if (CompressionMethod is { } method and not SevenZip.CompressionMethod.Default &&
-                CanUseCompressionMethod(method, format))
-            {
-                names[index] = StringMarshal.ManagedStringToBinaryString(format == ArchiveFormat.Zip ? "m" : "0");
-                values[index] = Union.Create(CompressionMethodToString(method));
-                index++;
-            }
-
-            if (CompressionLevel is { } level)
-            {
-                names[index] = StringMarshal.ManagedStringToBinaryString("x");
-                values[index] = Union.Create(CompressionLevelToUInt32(level));
-                index++;
-            }
-
-            using var namesHandle = new GcHandleGuard(names);
-            using var valuesHandle = new GcHandleGuard(values);
-
-            setter.SetProperties(namesHandle.Pointer, valuesHandle.Pointer, index);
+            var result = setter.SetProperties(names.Pointer, values.Pointer, count);
         }
         finally
         {
-            Array.ForEach(names, StringMarshal.BinaryStringFree);
-            Array.ForEach(values, value => value.Free());
+            NativeArray<nint>.ForEach(names, (int _, ref nint pointer) => StringMarshal.BinaryStringFree(pointer));
+            NativeArray<Union>.ForEach(values, (int _, ref Union value) => value.Free());
         }
     }
 

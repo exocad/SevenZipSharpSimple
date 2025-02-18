@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.IO;
 using System.Runtime.InteropServices;
 using SevenZip.Detail;
@@ -109,17 +110,52 @@ class ArchiveStream : IInputStream, IOutputStream, IDisposable
         }
     }
 
-    private int WriteCore(byte[] data, uint size)
+    private unsafe int WriteCore(IntPtr buffer, uint size)
     {
         EnsureNotDisposed();
-        BaseStream.Write(data, 0, (int)size);
-        return (int)size;
+
+        var length = (int)size;
+        var bufferAsSpan = new ReadOnlySpan<byte>(buffer.ToPointer(), length);
+
+#if NET
+        BaseStream.Write(bufferAsSpan);
+#else
+        // .NET 4.8 does not offer overloads of Stream.Write which accept a Span,
+        // so we rent a shared buffer as intermediate store to copy the bytes
+        // from the native memory to the stream. This reduces the amount of allocations.
+
+        var array = ArrayPool<byte>.Shared.Rent(length);
+        var arrayAsSpan = new Span<byte>(array, 0, length);
+
+        bufferAsSpan.CopyTo(arrayAsSpan);
+        BaseStream.Write(array, 0, length);
+
+        ArrayPool<byte>.Shared.Return(array);
+#endif
+
+        return length;
     }
 
-    private int ReadCore(byte[] buffer, uint size)
+    private unsafe int ReadCore(IntPtr buffer, uint size)
     {
         EnsureNotDisposed();
-        return BaseStream.Read(buffer, 0, (int)size);
+
+        var capacity = (int)size;
+        var bufferAsSpan = new Span<byte>(buffer.ToPointer(), capacity);
+
+#if NET
+        return BaseStream.Read(bufferAsSpan);
+#else
+        var array = ArrayPool<byte>.Shared.Rent(capacity);
+        var bytesRead = BaseStream.Read(array, 0, capacity);
+        var arrayAsSpan = new ReadOnlySpan<byte>(array, 0, bytesRead);
+
+        arrayAsSpan.CopyTo(bufferAsSpan);
+
+        ArrayPool<byte>.Shared.Return(array);
+
+        return bytesRead;
+#endif
     }
 
     private int SeekCore(long offset, SeekOrigin origin, IntPtr newPositionPtr)
@@ -148,21 +184,21 @@ class ArchiveStream : IInputStream, IOutputStream, IDisposable
     }
 
     /// <inheritdoc />
-    int ISequentialInputStream.Read([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1), Out] byte[] buffer, uint size) => ReadCore(buffer, size);
+    int ISequentialInputStream.Read(nint buffer, uint size) => ReadCore(buffer, size);
 
 #if !NET8_0_OR_GREATER
-    int IInputStream.Read([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1), Out] byte[] buffer, uint size) => ReadCore(buffer, size);
+    int IInputStream.Read(nint buffer, uint size) => ReadCore(buffer, size);
 #endif
 
     /// <inheritdoc />
     int IInputStream.Seek(long offset, SeekOrigin origin, IntPtr newPositionPtr) => SeekCore(offset, origin, newPositionPtr);
 
     /// <inheritdoc />
-    int ISequentialOutputStream.Write(byte[] data, uint size) => WriteCore(data, size);
+    int ISequentialOutputStream.Write(nint buffer, uint size) => WriteCore(buffer, size);
 
 #if !NET8_0_OR_GREATER
     /// <inheritdoc />
-    int IOutputStream.Write(byte[] data, uint size) => WriteCore(data, size);
+    int IOutputStream.Write(nint buffer, uint size) => WriteCore(buffer, size);
 #endif
 
     /// <inheritdoc />

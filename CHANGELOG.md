@@ -1,5 +1,20 @@
 # SevenZipSharp Changelog
 
+## [2.1.0] - 2025-02-18
+
+### Changed
+
+- Interop interface methods which are being invoked from the native library and which used a managed array as parameter
+  (like `byte[]`) now use raw pointers to avoid a memory allocation per interop call. 
+  This can result in a significantly reduced garbage collector pressure especially when compressing several
+  files and therefore improves the overall performance.
+- The 7z multithreading option can be configured via the `MultithreadingBehavior` property of the `CompressProperties` class.
+
+### Fixed
+
+- In some cases, the properties configured by the `CompressProperties` class were not applied correctly. This
+  should now be resolved.
+
 ## [2.0.1] - 2025-01-16
 
 ### Changed

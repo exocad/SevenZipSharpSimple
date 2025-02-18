@@ -30,5 +30,5 @@ interface ISequentialInputStream
     /// <param name="buffer">The array to copy the bytes read from the stream to.</param>
     /// <param name="size">The number of bytes to read.</param>
     /// <returns>The number of bytes actually read.</returns>
-    int Read([Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] byte[] buffer, uint size);
+    int Read(nint buffer, uint size);
 }

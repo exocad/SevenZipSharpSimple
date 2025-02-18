@@ -28,5 +28,5 @@ interface ISequentialOutputStream
     /// <param name="buffer">The buffer to copy the bytes from.</param>
     /// <param name="size">The number of bytes to copy.</param>
     /// <returns>The number of bytes written.</returns>
-    int Write([In, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] byte[] buffer, uint size);
+    int Write(nint buffer, uint size);
 }
