@@ -8,11 +8,18 @@ namespace SevenZip.Interop;
 /// Representation of a union that can store different value types.
 /// </summary>
 /// <remarks>
-/// The struct must have a size of >= 20 byte since the native structure
+/// The struct has a size of 20 bytes since the native structure
 /// additionally contains space to store an array pointer and its length,
 /// which is not used here.
+/// Unfortunately the size of this structure varies between the Windows and
+/// the Linux version of the 7z library. On Windows, even 24 bytes are used
+/// now. In most scenarios the size is of less importance since only single
+/// elements are being transferred when calling native 7z functions.
+/// But when passing an array of <see cref="Union"/> instances, which is 
+/// required to apply archive properties (See <see cref="IArchiveProperties"/>),
+/// the per element-size must be taken into account.
 /// </remarks>
-[StructLayout(LayoutKind.Explicit, Size = 8 + 8 + 4)]
+[StructLayout(LayoutKind.Explicit, Size = 20)]
 internal readonly struct Union
 {
     [FieldOffset(0)]
@@ -32,6 +39,23 @@ internal readonly struct Union
         
     [FieldOffset(8)]
     private readonly ulong _uint64;
+
+    /// <summary>
+    /// Gets the size the native structure occupies on the current platform,
+    /// in bytes.
+    /// </summary>
+    public static int Size
+    {
+        get
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return 24;
+            };
+
+            return 20;
+        }
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Union"/> struct with all members
