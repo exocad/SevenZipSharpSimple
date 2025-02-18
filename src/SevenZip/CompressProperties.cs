@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using SevenZip.Detail;
 using SevenZip.Interop;
 
@@ -125,6 +126,8 @@ public sealed class CompressProperties
             }
 
             var result = setter.SetProperties(names.Pointer, values.Pointer, count);
+
+            Marshal.ThrowExceptionForHR(result);
         }
         finally
         {
