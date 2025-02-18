@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using SevenZip;
 using Xunit;
 
@@ -70,6 +69,7 @@ public class ArchiveWriterTests
                 {
                     CompressionLevel = CompressionLevel.Ultra,
                     EncryptionMethod = encryptionMethod,
+                    CompressionMethod = CompressionMethod.Lzma,
                 });
             }
 
