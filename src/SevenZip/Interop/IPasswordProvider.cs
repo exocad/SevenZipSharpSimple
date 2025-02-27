@@ -23,11 +23,12 @@ interface IPasswordProvider
     /// Queries the password for the current archive.
     /// </summary>
     /// <param name="password">
-    /// If a password is set, it must be stored in this <c>out</c> parameter.
+    /// If a password is set, a new buffer containing the password must be assigned to this parameter.
+    /// The caller is responsible for freeing the buffer again.
     /// </param>
     /// <returns>
     /// A value of zero (0) on success, an error code otherwise.
     /// </returns>
     [PreserveSig]
-    int CryptoGetPassword([MarshalAs(UnmanagedType.BStr)] out string password);
+    int CryptoGetPassword(out nint password);
 }
