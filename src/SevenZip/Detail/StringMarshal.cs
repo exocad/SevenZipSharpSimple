@@ -90,7 +90,7 @@ internal static class StringMarshal
     /// </returns>
     public static unsafe IntPtr ManagedStringToBinaryString(string value)
     {
-        if (string.IsNullOrEmpty(value))
+        if (value == null)
         {
             return IntPtr.Zero;
         }
