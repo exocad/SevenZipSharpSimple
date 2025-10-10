@@ -18,8 +18,7 @@ The following binaries embedded in the NuGet package are licensed under the
 - 7z.dll
 - 7z.so
 
-The files located in `src/SevenZip/CoreSdk` where published under [public domain](https://github.com/exocad/SevenZipSharpSimple/tree/main/src/SevenZip/CoreSdk/LICENSE).
-
+The files located in `src/SevenZip/CoreSdk` were published under [public domain](https://github.com/exocad/SevenZipSharpSimple/tree/main/src/SevenZip/CoreSdk/LICENSE).
 All other files are licensed with the [MIT license](https://github.com/exocad/SevenZipSharpSimple/tree/main/LICENSE).
 
 ### References
@@ -80,10 +79,12 @@ the following snippet:
 The path to the native library can however be specified by setting the `ArchiveConfig.NativeLibraryPath`
 property, which is then passed to an `ArchiveReader` or `ArchiveWriter`.
 
-
 #### NuGet reference
 
-_Not available yet_
+> A public package is not available. It is currently only hosted on an internal server.
+
+To reference the package, add the following snippet to the `.csproj` file. When using
+central package management, omit the `Version` attribute.
 
 ```xml
 <ItemGroup>
@@ -132,11 +133,10 @@ using var reader = new ArchiveReader("archive.7z");
 
 var indices = reader.Entries
   .Where(entry => CanExtract(entry))
-  .Select(entry => entry.Index)
-  .TolArray();
+  .Select(entry => entry.Index);
 
 reader.Extract(
-  indices,
+  new IndexList(indices),
   entry => File.Open(Path.Join(baseDir, entry.Path), FileMode.Create, FileAccess.Write),
   ArchiveFlags.ApplyArchiveEntryTimestampsToFileStreams |
     ArchiveFlags.CloseArchiveEntryStreamAfterExtraction);
@@ -145,7 +145,7 @@ reader.Extract(
 ### Creating or modifying an archive
 
 The `ArchiveWriter` class can be used to create or update an archive. If the class is initialized
-with a contructor expecting an `ArchiveFormat` parameter, a new archive is created - even if an
+with a constructor expecting an `ArchiveFormat` parameter, a new archive is created - even if an
 archive already exists at the given location!
 
 To update an existing archive, choose a constructor not expecting the `ArchiveFormat`. The `ArchiveWriter`

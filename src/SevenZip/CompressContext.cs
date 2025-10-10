@@ -18,6 +18,7 @@ internal sealed partial class CompressContext : MarshalByRefObject, ICompressCon
     private readonly IArchiveWriterDelegate _delegate;
     private readonly ArchiveWriter _writer;
     private readonly List<ArchiveStream> _deferredStreams;
+    private readonly ArchiveIndexBuffer _indices;
     private ulong _total;
     private bool _disposed;
 
@@ -29,6 +30,7 @@ internal sealed partial class CompressContext : MarshalByRefObject, ICompressCon
     public CompressContext(ArchiveWriter writer, IArchiveWriterDelegate @delegate)
     {
         _writer = writer;
+        _indices = writer.UpdateContext.CreateArchiveIndexBuffer();
         _deferredStreams = CanDisposeStreamImmediately(writer.ArchiveFormat) ? null : [];
         _delegate = @delegate;
         _delegate?.OnProgressBegin(this);
@@ -84,52 +86,28 @@ internal sealed partial class CompressContext : MarshalByRefObject, ICompressCon
     {
         EnsureNotDisposed();
 
-        var context = _writer.UpdateContext;
-
-        if (context.IsEmptyArchive || context.IsNewFile(index))
+        if (_indices.TryGetArchiveUpdateEntry(index, out var entry))
         {
-            newData = 1;
-            newProperties = 1;
-            indexInArchive = uint.MaxValue;
-            return 0;
-        }
-
-        if (context.TryGetArchiveUpdateEntry(index, out var entry))
-        {
-            if (entry.IsMarkedForDelete)
+            switch (entry.UpdateOperation)
             {
-                newData = 0;
-                newProperties = 0;
-                indexInArchive = (uint)context.ArchiveEntries.Count;
+                case ArchiveUpdateOperation.Update:
+                    newData = 1;
+                    newProperties = 1;
+                    indexInArchive = _indices.GetIndexInExistingArchive(index);
+                    break;
 
-                foreach (var updateEntry in context.EnumerateModifiedEntries())
-                {
-                    if (updateEntry.Index > index || !updateEntry.IsMarkedForDelete)
-                    {
-                        continue;
-                    }
-
-                    do
-                    {
-                        indexInArchive--;
-                    }
-                    while (indexInArchive > 0u
-                           && context.TryGetArchiveUpdateEntry(indexInArchive, out var next)
-                           && next.IsMarkedForDelete);
-                }
-            }
-            else
-            {
-                newData = 1;
-                newProperties = 1;
-                indexInArchive = (uint)entry.Index;
+                case ArchiveUpdateOperation.Add:
+                    newData = 1;
+                    newProperties = 1;
+                    indexInArchive = uint.MaxValue;
+                    break;
             }
         }
         else
         {
             newData = 0;
             newProperties = 0;
-            indexInArchive = index;
+            indexInArchive = _indices.GetIndexInExistingArchive(index);
         }
 
         return 0;
@@ -139,23 +117,27 @@ internal sealed partial class CompressContext : MarshalByRefObject, ICompressCon
     {
         EnsureNotDisposed();
 
-        var context = _writer.UpdateContext;
+        if (_indices.TryGetArchiveUpdateEntry(index, out var updateEntry))
+        {
+            return EntryPropertyToUnion.Convert(updateEntry, property, ref value);
+        }
+        else
+        {
+            // 7z only requests the properties of modified or new entries.
 
-        return context.TryGetArchiveUpdateEntry(index, out var updateEntry)
-            ? EntryPropertyToUnion.Convert(updateEntry, property, ref value)
-            : EntryPropertyToUnion.Convert(context.ArchiveEntries[(int)index], property, ref value);
+            return 0;
+        }
     }
 
     int IArchiveUpdateCallback.GetStream(uint index, out ISequentialInputStream reader)
     {
         EnsureNotDisposed();
 
-        var context = _writer.UpdateContext;
         var stream = default(ArchiveStream);
 
         reader = null;
 
-        if (context.TryGetArchiveUpdateEntry((int)index, out var entry))
+        if (_indices.TryGetArchiveUpdateEntry(index, out var entry))
         {
             try
             {

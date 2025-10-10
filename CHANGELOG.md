@@ -1,5 +1,12 @@
 # SevenZipSharp Changelog
 
+## [2.2.0] - 2025-10-10
+
+### Fixed
+
+- Removing entries from an archive led to incorrect index values when the total amount of
+  archive entries changed. This sometimes resulted in an exception within the 7z library.
+
 ## [2.1.1] - 2025-02-27
 
 ### Changed
