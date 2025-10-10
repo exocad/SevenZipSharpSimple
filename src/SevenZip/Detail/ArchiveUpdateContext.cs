@@ -9,11 +9,11 @@ namespace SevenZip.Detail;
 /// The <see cref="ArchiveUpdateContext"/> manages any changes of an archive including
 /// new, modified and deleted files.
 /// </summary>
-sealed class ArchiveUpdateContext
+internal sealed class ArchiveUpdateContext
 {
-    private readonly Dictionary<int, ArchiveUpdateEntry> _entries = [];
+    private readonly Dictionary<int, ArchiveUpdateEntry> _updates = [];
+    private readonly List<ArchiveUpdateEntry> _inserts = [];
     private readonly List<ArchiveEntry> _existingArchiveEntries = [];
-    private int _cursor;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ArchiveUpdateContext"/> class.
@@ -25,9 +25,9 @@ sealed class ArchiveUpdateContext
     public ArchiveUpdateContext(in ArchiveEntry[] existingArchiveEntries) => Reset(existingArchiveEntries);
 
     /// <summary>
-    /// Gets the total number of entries.
+    /// Gets the total number of entries that will be in the archive after the next compress operation.
     /// </summary>
-    public int TotalEntryCount => _cursor;
+    public int NewArchiveEntryCount => _existingArchiveEntries.Count + _inserts.Count - GetDeleteOperationCount();
 
     /// <summary>
     /// Gets a value indicating whether the original archive was empty.
@@ -40,60 +40,19 @@ sealed class ArchiveUpdateContext
     public IReadOnlyList<ArchiveEntry> ArchiveEntries => _existingArchiveEntries;
 
     /// <summary>
-    /// Gets a value indicating whether the file entry at the given <paramref name="index"/> refers
-    /// to a new or an existing entry.
+    /// Creates an <see cref="ArchiveIndexBuffer"/> which maps the new indices to the indices
+    /// of the existing archive entries and provides access to the entries which need to be
+    /// modified or inserted.
+    /// 
+    /// The created instance contains the indices for the current state of the context. Changes
+    /// to the <see cref="ArchiveUpdateContext"/> which are made afterwards will not be reflected.
+    /// Instead, a new instance must be created in that case.
     /// </summary>
-    /// <param name="index">
-    /// The entry index.
-    /// </param>
-    /// <returns>
-    /// <c>true</c>, if the entry already exists. Otherwise, <c>false</c> is being returned.
-    /// </returns>
-    public bool IsNewFile(int index) => _entries.ContainsKey(index) && index >= _existingArchiveEntries.Count;
-
-    /// <summary>
-    /// Gets a value indicating whether the file entry at the given <paramref name="index"/> refers
-    /// to a new or an existing entry.
-    /// </summary>
-    /// <param name="index">
-    /// The entry index.
-    /// </param>
-    /// <returns>
-    /// <c>true</c>, if the entry already exists. Otherwise, <c>false</c> is being returned.
-    /// </returns>
-    public bool IsNewFile(uint index) => IsNewFile((int)index);
-
-    /// <summary>
-    /// Gets the <see cref="ArchiveUpdateEntry"/> at the given index, if it exists.
-    /// </summary>
-    /// <param name="index">
-    /// The index of the entry to obtain.
-    /// </param>
-    /// <param name="entry">
-    /// The corresponding entry or <c>null</c>, if the entry
-    /// does not exist.
-    /// </param>
-    /// <returns>
-    /// <c>true</c>, if the entry could be obtained. Otherwise, <c>false</c> is being returned.
-    /// </returns>
-    public bool TryGetArchiveUpdateEntry(int index, out ArchiveUpdateEntry entry) =>
-        _entries.TryGetValue(index, out entry);
-
-    /// <summary>
-    /// Gets the <see cref="ArchiveUpdateEntry"/> at the given index, if it exists.
-    /// </summary>
-    /// <param name="index">
-    /// The index of the entry to obtain.
-    /// </param>
-    /// <param name="entry">
-    /// The corresponding entry or <c>null</c>, if the entry
-    /// does not exist.
-    /// </param>
-    /// <returns>
-    /// <c>true</c>, if the entry could be obtained. Otherwise, <c>false</c> is being returned.
-    /// </returns>
-    public bool TryGetArchiveUpdateEntry(uint index, out ArchiveUpdateEntry entry) =>
-        TryGetArchiveUpdateEntry((int)index, out entry);
+    /// <returns>A new instance of the <see cref="ArchiveIndexBuffer"/> containing the new index map.</returns>
+    public ArchiveIndexBuffer CreateArchiveIndexBuffer()
+    {
+        return new ArchiveIndexBuffer(_existingArchiveEntries, _updates, _inserts);
+    }
 
     /// <summary>
     /// Resets the context to an initial state with the given entries.
@@ -106,27 +65,8 @@ sealed class ArchiveUpdateContext
         _existingArchiveEntries.Clear();
         _existingArchiveEntries.Capacity = existingArchiveEntries.Length;
         _existingArchiveEntries.AddRange(existingArchiveEntries);
-        _entries.Clear();
-        _cursor = _existingArchiveEntries.Count;
-    }
-
-    /// <summary>
-    /// Enumerates all new entries that refer to an existing entry that
-    /// requires modification or is marked for deletion.
-    /// </summary>
-    /// <returns>
-    /// A lazy collection containing all entries representing a modification
-    /// or deletion.
-    /// </returns>
-    public IEnumerable<ArchiveUpdateEntry> EnumerateModifiedEntries()
-    {
-        foreach (var entry in _existingArchiveEntries)
-        {
-            if (_entries.TryGetValue(entry.Index, out var updateEntry))
-            {
-                yield return updateEntry;
-            }
-        }
+        _inserts.Clear();
+        _updates.Clear();
     }
 
     /// <summary>
@@ -153,8 +93,7 @@ sealed class ArchiveUpdateContext
         EnsureArgumentNotNull(nameof(path), path);
         EnsureFileExists(path);
 
-        _entries[_cursor] = new ArchiveUpdateEntry(_cursor, archivePath, path);
-        return _cursor++;
+        return Insert(ArchiveUpdateEntry.Add(archivePath, path));
     }
 
     /// <summary>
@@ -189,8 +128,7 @@ sealed class ArchiveUpdateContext
             throw new ArgumentException("The given stream must support read operations.");
         }
 
-        _entries[_cursor] = new ArchiveUpdateEntry(_cursor, archivePath, stream, leaveOpen);
-        return _cursor++;
+        return Insert(ArchiveUpdateEntry.Add(archivePath, stream, leaveOpen));
     }
 
     /// <summary>
@@ -207,7 +145,7 @@ sealed class ArchiveUpdateContext
     {
         EnsureExistingArchiveEntryIndex(index);
 
-        _entries[index] = new ArchiveUpdateEntry(index, _existingArchiveEntries[index].IsDirectory);
+        _updates[index] = ArchiveUpdateEntry.Delete(_existingArchiveEntries[index].IsDirectory);
     }
 
     /// <summary>
@@ -237,7 +175,7 @@ sealed class ArchiveUpdateContext
 
         var archivePath = _existingArchiveEntries[index].Path;
 
-        _entries[index] = new ArchiveUpdateEntry(index, archivePath, path);
+        _updates[index] = ArchiveUpdateEntry.Update(archivePath, path);
     }
 
     /// <summary>
@@ -275,7 +213,20 @@ sealed class ArchiveUpdateContext
 
         var archivePath = _existingArchiveEntries[index].Path;
 
-        _entries[index] = new ArchiveUpdateEntry(index, archivePath, stream, leaveOpen);
+        _updates[index] = ArchiveUpdateEntry.Update(archivePath, stream, leaveOpen);
+    }
+
+    private int Insert(ArchiveUpdateEntry entry)
+    {
+        var index = _existingArchiveEntries.Count + _inserts.Count;
+
+        _inserts.Add(entry);
+        return index;
+    }
+
+    private int GetDeleteOperationCount()
+    {
+        return _updates.Values.Count(entry => entry.UpdateOperation == ArchiveUpdateOperation.Delete);
     }
 
     private void EnsureExistingArchiveEntryIndex(int index)

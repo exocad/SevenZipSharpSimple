@@ -224,7 +224,7 @@ public sealed class ArchiveWriter : IDisposable
 
             _format = format.Value;
 
-            // If a format is specified a new archice shall be created. Therefore, we reset
+            // If a format is specified a new archive shall be created. Therefore, we reset
             // the stream here.
             stream.Position = 0L;
             stream.SetLength(0);
@@ -488,7 +488,7 @@ public sealed class ArchiveWriter : IDisposable
             {
                 _stream.BaseStream.Seek(0, SeekOrigin.Begin);
 
-                var count = (uint)UpdateContext.TotalEntryCount;
+                var count = (uint)UpdateContext.NewArchiveEntryCount;
                 var writer = ApplyArchiveWriterProperties(CreateArchiveWriter(input), properties);
                 var result = writer.UpdateItems(_stream, count, context);
 
