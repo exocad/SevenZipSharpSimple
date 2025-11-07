@@ -243,13 +243,24 @@ public sealed class ArchiveWriter : IDisposable
         _delegate = @delegate ?? ArchiveWriterDelegate.Default;
         _stream = new ArchiveStream(stream, leaveOpen);
 
-        UpdateContext = new ArchiveUpdateContext(ReadExistingArchiveEntries(stream));
+        UpdateContext = new ArchiveUpdateContext(ReadExistingArchiveEntryList(stream));
     }
+
+    /// <summary>
+    /// Gets the size the entire archive content requires when being extracted,
+    /// in bytes.
+    /// This property only includes the archive entries that are already part
+    /// of the current archive. It does not consider any pending entries.
+    /// </summary>
+    /// <remarks>
+    /// This property is update after a call to <see cref="Compress(CompressProperties)"/>.
+    /// </remarks>
+    public ulong UncompressedArchiveSize => UpdateContext.UncompressedArchiveSize;
 
     /// <summary>
     /// Gets the selected format for this archive.
     /// </summary>
-    public ArchiveFormat ArchiveFormat =>_format;
+    public ArchiveFormat ArchiveFormat => _format;
 
     /// <summary>
     /// Gets a list of all already existing archive entries.
@@ -268,6 +279,22 @@ public sealed class ArchiveWriter : IDisposable
             EnsureNotDisposed();
             return UpdateContext.ArchiveEntries;
         }
+    }
+
+    /// <summary>
+    /// Adds an empty directory to the archive.
+    /// </summary>
+    /// <param name="archivePath">The path within the archive.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown if any of the arguments is <c>null</c>.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// Thrown if this object has already been disposed.
+    /// </exception>
+    public void AddDirectory(string archivePath)
+    {
+        EnsureNotDisposed();
+        UpdateContext.AddDirectory(archivePath);
     }
 
     /// <summary>
@@ -473,7 +500,7 @@ public sealed class ArchiveWriter : IDisposable
         {
             if (UpdateContext.IsEmptyArchive is false)
             {
-                intermediatePath = System.IO.Path.GetTempFileName();
+                intermediatePath = Config.GetTempFileName();
                 input = new ArchiveStream(
                     File.Open(intermediatePath, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite),
                     leaveOpen: false);
@@ -495,7 +522,7 @@ public sealed class ArchiveWriter : IDisposable
                 Marshal.ThrowExceptionForHR(result);
             }
 
-            UpdateContext.Reset(ReadExistingArchiveEntries(_stream.BaseStream));
+            UpdateContext.Reset(ReadExistingArchiveEntryList(_stream.BaseStream));
         }
         finally
         {
@@ -552,20 +579,20 @@ public sealed class ArchiveWriter : IDisposable
         return writer;
     }
 
-    private ArchiveEntry[] ReadExistingArchiveEntries(Stream stream)
+    private ArchiveEntryList ReadExistingArchiveEntryList(Stream stream)
     {
-        var entries = Array.Empty<ArchiveEntry>();
+        var entryList = default(ArchiveEntryList);
 
         if (stream.Length > 0 && stream.CanRead)
         {
             var position = stream.Position;
             var reader = ComObjectFactory.CreateObject<IArchiveReader>(_libraryHandle, _format);
 
-            entries = new ArchiveEntryReader(reader, stream).Entries;
+            entryList = new ArchiveEntryList(reader, stream);
             stream.Position = position;
         }
 
-        return entries;
+        return entryList;
     }
 
     private void EnsureNotDisposed()

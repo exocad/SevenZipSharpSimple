@@ -97,7 +97,7 @@ internal sealed partial class CompressContext : MarshalByRefObject, ICompressCon
                     break;
 
                 case ArchiveUpdateOperation.Add:
-                    newData = 1;
+                    newData = entry.IsDirectory ? 0 : 1;
                     newProperties = 1;
                     indexInArchive = uint.MaxValue;
                     break;
