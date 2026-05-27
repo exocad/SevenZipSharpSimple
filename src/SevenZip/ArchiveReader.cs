@@ -88,8 +88,16 @@ public sealed class ArchiveReader : IDisposable
         _libraryHandle = Native.LoadLibrary(Config.NativeLibraryPath);
         _reader = CreateArchiveReader();
         _stream = new ArchiveStream(stream, leaveOpen);
-        _entries = new ArchiveEntryReader(_reader, _stream.BaseStream).Entries;
+        _entries = ArchiveEntryList.Read(_reader, _stream.BaseStream, out var uncompressedArchiveSize);
+
+        UncompressedArchiveSize = uncompressedArchiveSize;
     }
+
+    /// <summary>
+    /// Gets the size the entire archive content requires when being extracted,
+    /// in bytes.
+    /// </summary>
+    public ulong UncompressedArchiveSize { get; }
 
     /// <summary>
     /// Gets the number of entries this archive has.

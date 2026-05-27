@@ -81,7 +81,7 @@ internal sealed class NativeStreamPool : IScopedStreamPool
         unsafe
         {
             var pointer = new IntPtr(Unsafe.Add<byte>(_pointer.ToPointer(), _cursor));
-            var stream =new NativeMemoryStream(pointer, capacity);
+            var stream = new UnmanagedMemoryStream((byte *)pointer, 0L, capacity, FileAccess.ReadWrite);
 
             _cursor += capacity;
 

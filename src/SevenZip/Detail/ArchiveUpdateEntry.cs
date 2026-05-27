@@ -55,12 +55,24 @@ internal sealed class ArchiveUpdateEntry
     public DateTime CreationTime { get; }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="ArchiveUpdateEntry"/> class which adds an
+    /// empty directory to the archive.
+    /// </summary>
+    /// <param name="archivePath">The directory path within the archive.</param>
+    /// <returns>The initialized <see cref="ArchiveUpdateEntry"/>.</returns>
+    public static ArchiveUpdateEntry AddDirectory(string archivePath)
+    {
+        return new ArchiveUpdateEntry(ArchiveUpdateOperation.Add, archivePath, FileAttributes.Directory);
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ArchiveUpdateEntry"/> class which adds a
     /// new entry with the contents of the given <paramref name="source"/>.
     /// </summary>
     /// <param name="archivePath">The path the entry should have within the archive.</param>
     /// <param name="source">The stream to read the contents from.</param>
     /// <param name="leaveOpen"><c>true</c> to dispose the given stream once all data has been read. <c>false</c> to leave it open.</param>
+    /// <returns>The initialized <see cref="ArchiveUpdateEntry"/>.</returns>
     public static ArchiveUpdateEntry Add(string archivePath, Stream source, bool leaveOpen)
     {
         return new ArchiveUpdateEntry(ArchiveUpdateOperation.Add, archivePath, source, leaveOpen);
@@ -72,6 +84,7 @@ internal sealed class ArchiveUpdateEntry
     /// </summary>
     /// <param name="archivePath">The path the entry should have within the archive.</param>
     /// <param name="path">The path to the physical file to add.</param>
+    /// <returns>The initialized <see cref="ArchiveUpdateEntry"/>.</returns>
     public static ArchiveUpdateEntry Add(string archivePath, string path)
     {
         return new ArchiveUpdateEntry(ArchiveUpdateOperation.Add, archivePath, path);
@@ -84,6 +97,7 @@ internal sealed class ArchiveUpdateEntry
     /// <param name="archivePath">The path the entry should have within the archive.</param>
     /// <param name="source">The stream to read the contents from.</param>
     /// <param name="leaveOpen"><c>true</c> to dispose the given stream once all data has been read. <c>false</c> to leave it open.</param>
+    /// <returns>The initialized <see cref="ArchiveUpdateEntry"/>.</returns>
     public static ArchiveUpdateEntry Update(string archivePath, Stream source, bool leaveOpen)
     {
         return new ArchiveUpdateEntry(ArchiveUpdateOperation.Update, archivePath, source, leaveOpen);
@@ -95,6 +109,7 @@ internal sealed class ArchiveUpdateEntry
     /// </summary>
     /// <param name="archivePath">The path the entry should have within the archive.</param>
     /// <param name="path">The path to the physical file to add.</param>
+    /// <returns>The initialized <see cref="ArchiveUpdateEntry"/>.</returns>
     public static ArchiveUpdateEntry Update(string archivePath, string path)
     {
         return new ArchiveUpdateEntry(ArchiveUpdateOperation.Update, archivePath, path);
@@ -105,10 +120,10 @@ internal sealed class ArchiveUpdateEntry
     /// constructor is used to mark an existing entry for deletion by setting
     /// the <see cref="ArchivePath"/> property to <see cref="string.Empty"/>.
     /// </summary>
-    /// <param name="directory">Indicates whether the entry represents a directory.</param>
-    public static ArchiveUpdateEntry Delete(bool directory)
+    /// <returns>The initialized <see cref="ArchiveUpdateEntry"/>.</returns>
+    public static ArchiveUpdateEntry Delete()
     {
-        return new ArchiveUpdateEntry(directory);
+        return new ArchiveUpdateEntry(ArchiveUpdateOperation.Delete, archivePath: string.Empty, FileAttributes.Offline);
     }
 
     /// <summary>
@@ -144,12 +159,15 @@ internal sealed class ArchiveUpdateEntry
         throw new InvalidOperationException($"The entry {ArchivePath} does not reference an existing stream or a file.");
     }
 
-    private ArchiveUpdateEntry(bool isDirectory)
+    private ArchiveUpdateEntry(ArchiveUpdateOperation operation, string archivePath, FileAttributes attributes)
         : this(path: string.Empty, source: null, leaveOpen: false)
     {
-        UpdateOperation = ArchiveUpdateOperation.Delete;
-        Attributes = isDirectory ? FileAttributes.Directory : FileAttributes.Normal;
-        ArchivePath = string.Empty;
+        UpdateOperation = operation;
+        Attributes = attributes;
+        ArchivePath = archivePath;
+        LastAccessTime =
+        LastWriteTime =
+        CreationTime = DateTime.UtcNow;
     }
 
     private ArchiveUpdateEntry(ArchiveUpdateOperation operation, string archivePath, string path)

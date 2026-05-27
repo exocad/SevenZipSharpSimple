@@ -18,11 +18,11 @@ internal sealed class ArchiveUpdateContext
     /// <summary>
     /// Initializes a new instance of the <see cref="ArchiveUpdateContext"/> class.
     /// </summary>
-    /// <param name="existingArchiveEntries">
-    /// An array containing the entries that already exist in the target archive. This is
+    /// <param name="entryList">
+    /// The <see cref="ArchiveEntryList"/> containing the entries that already exist in the target archive. This is
     /// required to manage the entry indices and track if a file is new or modified.
     /// </param>
-    public ArchiveUpdateContext(in ArchiveEntry[] existingArchiveEntries) => Reset(existingArchiveEntries);
+    public ArchiveUpdateContext(in ArchiveEntryList entryList) => Reset(entryList);
 
     /// <summary>
     /// Gets the total number of entries that will be in the archive after the next compress operation.
@@ -33,6 +33,12 @@ internal sealed class ArchiveUpdateContext
     /// Gets a value indicating whether the original archive was empty.
     /// </summary>
     public bool IsEmptyArchive => _existingArchiveEntries.Count == 0;
+
+    /// <summary>
+    /// Gets the size the entire archive content requires when being extracted,
+    /// in bytes.
+    /// </summary>
+    public ulong UncompressedArchiveSize { get; private set; }
 
     /// <summary>
     /// Gets a collection containing the already existing entries.
@@ -57,16 +63,18 @@ internal sealed class ArchiveUpdateContext
     /// <summary>
     /// Resets the context to an initial state with the given entries.
     /// </summary>
-    /// <param name="existingArchiveEntries">
-    /// An array containing the entries that already exist in the associated archive.
+    /// <param name="entryList">
+    /// The <see cref="ArchiveEntryList"/> containing the entries that already exist in the associated archive.
     /// </param>
-    public void Reset(in ArchiveEntry[] existingArchiveEntries)
+    public void Reset(in ArchiveEntryList entryList)
     {
-        _existingArchiveEntries.Clear();
-        _existingArchiveEntries.Capacity = existingArchiveEntries.Length;
-        _existingArchiveEntries.AddRange(existingArchiveEntries);
         _inserts.Clear();
         _updates.Clear();
+        _existingArchiveEntries.Clear();
+        _existingArchiveEntries.Capacity = entryList?.Entries.Length ?? 0;
+        _existingArchiveEntries.AddRange(entryList?.Entries ?? []);
+
+        UncompressedArchiveSize = entryList?.UncompressedArchiveSize ?? 0;
     }
 
     /// <summary>
@@ -145,7 +153,20 @@ internal sealed class ArchiveUpdateContext
     {
         EnsureExistingArchiveEntryIndex(index);
 
-        _updates[index] = ArchiveUpdateEntry.Delete(_existingArchiveEntries[index].IsDirectory);
+        _updates[index] = ArchiveUpdateEntry.Delete();
+    }
+
+    /// <summary>
+    /// Adds an empty directory to the archive.
+    /// </summary>
+    /// <param name="archivePath">The path within the archive.</param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown if any of the arguments is <c>null</c>.
+    /// </exception>
+    public void AddDirectory(string archivePath)
+    {
+        EnsureArgumentNotNull(nameof(archivePath), archivePath);
+        Insert(ArchiveUpdateEntry.AddDirectory(archivePath));
     }
 
     /// <summary>

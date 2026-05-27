@@ -25,8 +25,10 @@ public sealed class ArchiveConfig
     /// 
     /// See <see cref="IgnoreOperationErrors"/> for details.
     /// </param>
-    /// <param name="nativeLibraryPath">The native library path. If empty or <c>null</c>,
-    /// <see cref="NativeLibraryPath"/> will be set to <c>7z.dll</c>.</param>
+    /// <param name="nativeLibraryPath">
+    /// The native library path. If empty or <c>null</c>, <see cref="NativeLibraryPath"/>
+    /// will be set to <c>7z.dll</c>.
+    /// </param>
     public ArchiveConfig(string password, bool ignoreOperationErrors, string nativeLibraryPath = null)
         : this(password, nativeLibraryPath)
     {
@@ -69,9 +71,35 @@ public sealed class ArchiveConfig
     public string NativeLibraryPath { get; init; } = GetDefaultLibraryName();
 
     /// <summary>
+    /// Gets the delegate used to generate a uniquely named, zero-byte temporary file on disk.
+    /// </summary>
+    /// <remarks>
+    /// By default, this property uses <see cref="System.IO.Path.GetTempFileName"/> to create
+    /// a temporary file.
+    /// </remarks>
+    public GetTempFileName GetTempFileNameDelegate { get; } = System.IO.Path.GetTempFileName;
+
+    /// <summary>
     /// Gets the default configuration to use when no user configuration is provided.
     /// </summary>
     internal static ArchiveConfig Default { get; } = new();
+
+    /// <summary>
+    /// Gets a full path to a uniquely named, zero-byte temporary file on disk.
+    /// </summary>
+    /// <remarks>
+    /// By default, this method uses <see cref="System.IO.Path.GetTempFileName"/> to create
+    /// a temporary file. A custom delegate can be specified by setting the
+    /// <see cref="GetTempFileNameDelegate"/> property."/>
+    /// </remarks>
+    internal string GetTempFileName()
+    {
+        return GetTempFileNameDelegate switch
+        {
+            { } @delegate => @delegate(),
+            null => System.IO.Path.GetTempFileName(),
+        };
+    }
 
     /// <summary>
     /// Creates a copy of the given <paramref name="config"/> to prevent that properties may be

@@ -55,7 +55,7 @@ public class ArchiveWriterTests
     [InlineData(ArchiveFormat.Zip, EncryptionMethod.Aes128, "test", "AES-128 Store")]
     public void CreateEncryptedArchive(ArchiveFormat format, EncryptionMethod encryptionMethod, string key, string expectedMethodString)
     {
-         File.WriteAllText(SampleTextFilePath, SampleTextFileContent);
+        File.WriteAllText(SampleTextFilePath, SampleTextFileContent);
 
         var archivePath = $"writer-test-{encryptionMethod}.{format}";
         var p = System.IO.Path.GetFullPath(archivePath);
@@ -93,5 +93,25 @@ public class ArchiveWriterTests
             File.Delete(SampleTextFilePath);
             File.Delete(archivePath);
         }
-   }
+    }
+
+    [Fact]
+    public void CreateArchiveWithEmptyDirectory()
+    {
+        using var stream = new MemoryStream();
+        using var writer = new ArchiveWriter(ArchiveFormat.SevenZip, stream, leaveOpen: true);
+
+        writer.AddDirectory("empty-dir");
+        writer.Compress();
+        stream.Seek(0, SeekOrigin.Begin);
+
+        using var reader = new ArchiveReader(stream, leaveOpen: true);
+
+        var entries = reader.Entries;
+        var entry = entries[0];
+
+        Assert.Single(entries);
+        Assert.True(entry.IsDirectory);
+        Assert.Equal("empty-dir", entry.Path);
+    }
 }
