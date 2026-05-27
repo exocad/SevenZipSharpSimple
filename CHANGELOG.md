@@ -1,5 +1,25 @@
 # SevenZipSharp Changelog
 
+## [2.3.0] - 2026-05-27
+
+### Changed
+
+- Added .NET 10 as target framework and removed .NET 6 as target framework.
+- `ArchiveReader` and `ArchiveWriter` now both provide a property named `UncompressedArchiveSize`,
+   which returns the total size of the archive content after it has been extracted.
+- `InMemoryArchiveRepacker` and the `BulkExtract` extension now support two new flags / options:
+  - `DisposeArchiveEntryStreamAfterUse` specifies whether streams should be disposed automatically after use.
+  - `UseFileStreamForOversizedArchiveEntries` specifies that archive entries exceeding the supported size of
+    .NET arrays will use a temporary file to process the entry instead of throwing an exception. This option
+    is only available in .NET Core.
+  - These new flags are disabled by default to preserve the known behavior.
+- `InMemoryArchiveRepacker` can now also transfer directory entries.
+  - To omit any entry, the given filter callback can now return `null`.
+- `BulkExtract` now provides an overload accepting a generic state parameter, which is passed to the
+  `consumeExtractResults` callback.
+- The `ArchiveConfig` contains a delegate to customize the method to use for creating temporary files. By
+  default, `Path.GetTempFileName` is used.
+
 ## [2.2.0] - 2025-10-10
 
 ### Fixed
