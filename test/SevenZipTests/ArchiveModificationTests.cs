@@ -3,6 +3,7 @@ using Xunit;
 
 namespace SevenZipTests;
 
+[Collection("SevenZip")]
 public class ArchiveModificationTests
 {
     [Theory]

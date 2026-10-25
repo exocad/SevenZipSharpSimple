@@ -4,6 +4,7 @@ using Xunit;
 
 namespace SevenZipTests;
 
+[Collection("SevenZip")]
 public class LzmaTests
 {
     const string Data = "This is a sample text used to test the LZMA algorithm.";

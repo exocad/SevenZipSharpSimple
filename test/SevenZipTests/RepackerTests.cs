@@ -6,6 +6,7 @@ using Xunit;
 
 namespace SevenZipTests;
 
+[Collection("SevenZip")]
 public class RepackerTests
 {
     [Fact]

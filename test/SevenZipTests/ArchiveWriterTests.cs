@@ -4,6 +4,7 @@ using Xunit;
 
 namespace SevenZipTests;
 
+[Collection("SevenZip")]
 public class ArchiveWriterTests
 {
     const string SampleTextFilePath = "test-file.txt";
@@ -13,6 +14,14 @@ public class ArchiveWriterTests
     const string SampleTextFileContent = "This is the content of a test file.";
 
     static readonly byte[] SampleBinaryFileContent = [0x00, 0x01, 0x02, 0x04, 0x05, 0x06];
+
+    // The native library reports entry paths with the platform's directory
+    // separator character, i.e. backslashes on Windows and slashes on Linux.
+    static readonly string[] ExpectedEntryPaths =
+    [
+        "dir" + Path.DirectorySeparatorChar + "file1.txt",
+        "dir" + Path.DirectorySeparatorChar + "file2.bin",
+    ];
 
     [Theory]
     [InlineData(ArchiveFormat.SevenZip)]
@@ -38,7 +47,7 @@ public class ArchiveWriterTests
                 foreach (var entry in entries)
                 {
                     Assert.True(entry.UncompressedSize > 0UL);
-                    Assert.True(entry.Path is "dir\\file1.txt" or "dir\\file2.bin");
+                    Assert.Contains(entry.Path, ExpectedEntryPaths);
                 }
             }
         }
@@ -82,7 +91,7 @@ public class ArchiveWriterTests
                 foreach (var entry in entries)
                 {
                     Assert.True(entry.UncompressedSize > 0UL);
-                    Assert.True(entry.Path is "dir\\file1.txt" or "dir\\file2.bin");
+                    Assert.Contains(entry.Path, ExpectedEntryPaths);
 
                     Assert.Contains(expectedMethodString, entry.Method);
                 }

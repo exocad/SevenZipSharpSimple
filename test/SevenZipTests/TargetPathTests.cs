@@ -1,8 +1,10 @@
 ﻿using System.IO;
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace SevenZipTests;
 
+[Collection("SevenZip")]
 public class TargetPathTests
 {
     [Theory]
@@ -17,9 +19,7 @@ public class TargetPathTests
     }
 
     [Theory]
-    [InlineData("C:\\Extract", "\\filename.exe")]
-    [InlineData("C:\\Extract", "C:\\filename.exe")]
-    [InlineData("C:\\Extract\\", "C:\\targetdir\\filename.exe")]
+    [MemberData(nameof(InvalidArchiveEntryPaths))]
     public void TestGetSecureTargetPathOrThrowWithInvalidArchiveEntryPath(string baseDir, string archiveEntryPath)
     {
         Assert.ThrowsAny<IOException>(() =>
@@ -27,6 +27,26 @@ public class TargetPathTests
             SevenZip.Detail.TargetPath.GetSecureTargetPathOrThrow(baseDir, archiveEntryPath, false);
         });
     }
+
+    /// <summary>
+    /// Archive entry paths which are absolute (rooted) and thus point outside of the
+    /// given base directory. The notation of an absolute path is platform specific,
+    /// e.g. <c>C:\file.txt</c> on Windows or <c>/file.txt</c> on Linux.
+    /// </summary>
+    public static TheoryData<string, string> InvalidArchiveEntryPaths =>
+        RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? new TheoryData<string, string>
+            {
+                ("C:\\Extract", "\\filename.exe"),
+                ("C:\\Extract", "C:\\filename.exe"),
+                ("C:\\Extract\\", "C:\\targetdir\\filename.exe"),
+            }
+            : new TheoryData<string, string>
+            {
+                ("/Extract", "/filename.exe"),
+                ("/Extract/", "/targetdir/filename.exe"),
+                ("/Extract", "/somewhere/else.txt"),
+            };
 
     [Theory]
     [InlineData("C:\\", "C:\\targetdir\\filename.exe")]

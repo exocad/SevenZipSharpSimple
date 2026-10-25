@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using SevenZip.Detail;
 using SevenZip.Interop;
@@ -214,10 +215,31 @@ public sealed class ArchiveReader : IDisposable
 
         using var guard = new OpenArchiveGuard(_reader, _stream.BaseStream);
         using var context = new ExtractContext(this, _delegate, flags, onGetStream);
-        
+
         guard.EnsureOpened();
 
         var result = _reader.Extract(indices.Values, indices.Length, 0, context);
+
+        ThrowExceptionForResult(result, context);
+    }
+
+    /// <summary>
+    /// Throws an exception for the given P/Invoke <paramref name="result"/>.
+    ///
+    /// On some platforms (e.g. Linux), an <see cref="ArchiveOperationException"/> thrown
+    /// from an <see cref="IArchiveExtractCallback"/> callback is not propagated to the
+    /// managed caller, but is swallowed by the native layer and reported back as the
+    /// return value of the P/Invoke call. In that case, the original exception is
+    /// re-thrown instead, keeping the error behavior consistent across platforms.
+    /// </summary>
+    /// <param name="result">The return value of the P/Invoke call.</param>
+    /// <param name="context">The <see cref="ExtractContext"/> used for the P/Invoke call.</param>
+    private static void ThrowExceptionForResult(int result, ExtractContext context)
+    {
+        if (result != 0 && context.OperationError is { } operationError)
+        {
+            ExceptionDispatchInfo.Capture(operationError).Throw();
+        }
 
         Marshal.ThrowExceptionForHR(result);
     }
@@ -288,7 +310,7 @@ public sealed class ArchiveReader : IDisposable
 
         var result = _reader.Extract(indices, (uint)length, 0, context);
 
-        Marshal.ThrowExceptionForHR(result);
+        ThrowExceptionForResult(result, context);
     }
 
     private IArchiveReader CreateArchiveReader()

@@ -5,6 +5,7 @@ using Xunit;
 
 namespace SevenZipTests;
 
+[Collection("SevenZip")]
 public class PathEnumeratorTests
 {
     [Fact]

@@ -11,6 +11,7 @@ using Xunit;
 
 namespace SevenZipTests;
 
+[Collection("SevenZip")]
 public sealed class ArchiveEntryListTests
 {
     [Theory]
