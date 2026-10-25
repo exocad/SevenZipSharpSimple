@@ -7,7 +7,7 @@
 
   The licenses for files are:
 
-    1) 7z.dll:
+    1) 7z.dll, 7z.so and lib7z.dylib:
          - The "GNU LGPL" as main license for most of the code
          - The "GNU LGPL" with "unRAR license restriction" for some code
          - The "BSD 3-clause License" for some code

@@ -45,21 +45,32 @@ The archive operations (create, modify, extract) P/Invoke into a native 7z
 library whose path can be configured via `ArchiveConfig.NativeLibraryPath`
 (defaulting to `7z.dll` on Windows and `7z.so` on Linux).
 
-This repository only ships:
+This repository ships:
 
 - `runtimes/win-x64/native/7z.dll`
 - `runtimes/linux-x64/native/7z.so`
+- `runtimes/osx-arm64/native/lib7z.dylib` (macOS, Apple Silicon)
 
-There is **no macOS build** of the native 7z library, so on macOS the
-`ArchiveReader`/`ArchiveWriter` based tests cannot run. The parts of the
-library that are pure C# — in particular the `Lzma` class (the managed port of
-the original 7-Zip SDK code) — work natively on macOS; the `LzmaTests` pass
-(2/2) on Apple Silicon.
-
-To use the archive operations on macOS, build a macOS binary of 7-Zip (e.g.
-from https://github.com/mcmilk/7-Zip for `osx-arm64`, exposing the same C API
-as the `Format7zF` bundle used for `7z.so`) and pass it via
+All of them expose the same C API entry point (`CreateObject`), which the
+library resolves at runtime; a different binary can be supplied via
 `ArchiveConfig.NativeLibraryPath`.
+
+### Building `lib7z.dylib`
+
+The macOS library is built from the original 7-Zip repository
+(https://github.com/mcmilk/7-Zip) in the same way as `7z.so`, using the
+`Format7zF` bundle. On a macOS machine with the Xcode command line tools
+installed:
+
+```bash
+git clone https://github.com/mcmilk/7-Zip.git
+cd 7-Zip/CPP/7zip/Bundles/Format7zF
+make -f makefile.gcc CC=clang CXX=clang++ "CFLAGS_BASE=-O2 -c -DNDEBUG -D_REENTRANT -fPIC"
+cp _o/7z.so runtimes/osx-arm64/native/lib7z.dylib
+```
+
+The `CFLAGS_BASE` override disables the `-Werror` flag of the Linux makefile,
+which is not portable to clang on macOS.
 
 ## Packaging
 
@@ -88,9 +99,5 @@ Filter options: `-class "name"`, `-method "Ns.Class.Method"`,
 `-namespace "name"` (wildcards supported). Note that the MTP query options
 such as `--filter-method` are not wired up for this runner.
 
-Status on macOS arm64 (2026-10-25):
-
-| Test area                        | Result |
-| -------------------------------- | ------ |
-| `LzmaTests` (pure C# SDK)        | pass   |
-| Archive reader/writer tests      | not runnable — no native 7z for macOS |
+With `runtimes/osx-arm64/native/lib7z.dylib` present, the complete test suite
+and the `TestConsoleProgram` verification program run on macOS arm64.
