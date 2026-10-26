@@ -57,20 +57,34 @@ library resolves at runtime; a different binary can be supplied via
 
 ### Building `lib7z.dylib`
 
-The macOS library is built from the original 7-Zip repository
-(https://github.com/mcmilk/7-Zip) in the same way as `7z.so`, using the
-`Format7zF` bundle. On a macOS machine with the Xcode command line tools
-installed:
+The macOS library is built from the official 7-Zip git repository
+(https://github.com/ip7z/7zip), which succeeded the former mirror
+(https://github.com/mcmilk/7-Zip), in the same way as `7z.so`, using the
+`Format7zF` bundle. The library currently shipped in
+`runtimes/osx-arm64/native/` was built from version 26.05 (tag `26.05`,
+commit `b88c6bc09339de32f7d18bbab900686b244f42ba`).
+
+On a macOS machine with the Xcode command line tools installed:
 
 ```bash
-git clone https://github.com/mcmilk/7-Zip.git
-cd 7-Zip/CPP/7zip/Bundles/Format7zF
+git clone --branch 26.05 --depth 1 https://github.com/ip7z/7zip.git
+cd 7zip/CPP/7zip/Bundles/Format7zF
 make -f makefile.gcc CC=clang CXX=clang++ "CFLAGS_BASE=-O2 -c -DNDEBUG -D_REENTRANT -fPIC"
-cp _o/7z.so runtimes/osx-arm64/native/lib7z.dylib
+# copy the result into the SevenZipSharpSimple repository:
+cp _o/7z.so /path/to/SevenZipSharpSimple/runtimes/osx-arm64/native/lib7z.dylib
 ```
 
 The `CFLAGS_BASE` override disables the `-Werror` flag of the Linux makefile,
 which is not portable to clang on macOS.
+
+### String marshalling
+
+The 7z C API passes strings as BSTR-like pointers. On Windows these hold
+16 bit characters, while the Linux and macOS builds of the native library
+use 32 bit `wchar_t`. The managed side (`StringMarshal`) therefore treats
+Linux and macOS identically: a 4 byte length prefix followed by UTF-32
+characters, matching the `SysAllocString` implementation of 7-Zip for
+non-Windows platforms.
 
 ## Packaging
 
