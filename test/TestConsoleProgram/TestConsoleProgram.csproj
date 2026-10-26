@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- This console app is only required for .NET 10 verification runs, so the
+         inherited TargetFrameworks property is cleared in favor of the single
+         TargetFramework property (which is required for `dotnet run` to work
+         without an explicit framework). -->
+    <TargetFramework>net10.0</TargetFramework>
+    <TargetFrameworks></TargetFrameworks>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <Import Project="../../Native7zReferences.target" />
+
+  <ItemGroup>
+    <None Include="../test-data/archive-encrypted.zip" Link="test-data/archive-encrypted.zip" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SevenZip\SevenZip.csproj" />
+  </ItemGroup>
+</Project>

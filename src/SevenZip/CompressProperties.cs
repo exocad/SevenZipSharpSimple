@@ -171,7 +171,11 @@ public sealed class CompressProperties
                 not SevenZip.CompressionMethod.Deflate and
                 not SevenZip.CompressionMethod.Deflate64,
             ArchiveFormat.Tar => method == SevenZip.CompressionMethod.Copy,
-            ArchiveFormat.Zip => method != SevenZip.CompressionMethod.Lzma2,
+            ArchiveFormat.Zip => method is
+                SevenZip.CompressionMethod.Copy or
+                SevenZip.CompressionMethod.Deflate or
+                SevenZip.CompressionMethod.Deflate64 or
+                SevenZip.CompressionMethod.BZip2,
             _ => true
         };
     }

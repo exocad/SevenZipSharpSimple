@@ -9,6 +9,7 @@ using Xunit;
 
 namespace SevenZipTests;
 
+[Collection("SevenZip")]
 public sealed class BulkExtractTests
 {
     [Fact]
@@ -58,18 +59,22 @@ public sealed class BulkExtractTests
                 return Task.CompletedTask;
             }, options);
 
+        // The native library reports entry paths with the platform's directory
+        // separator character, i.e. backslashes on Windows and slashes on Linux.
+        var separator = Path.DirectorySeparatorChar;
+
         Assert.Equal(1, fileStreamCount);
         Assert.Equal(5, entries.Count);
-        Assert.Contains(@"archive\folder\file-1.txt", entries as IReadOnlyDictionary<string, int>);
-        Assert.Contains(@"archive\folder\file-2.txt", entries as IReadOnlyDictionary<string, int>);
-        Assert.Contains(@"archive\folder\file-3.txt", entries as IReadOnlyDictionary<string, int>);
-        Assert.Contains(@"archive\folder\file-4.txt", entries as IReadOnlyDictionary<string, int>);
-        Assert.Contains(@"archive\file-1.txt", entries as IReadOnlyDictionary<string, int>);
-        Assert.Equal(11, entries[@"archive\file-1.txt"]);
-        Assert.Equal(6, entries[@"archive\folder\file-1.txt"]);
-        Assert.Equal(6, entries[@"archive\folder\file-2.txt"]);
-        Assert.Equal(6, entries[@"archive\folder\file-3.txt"]);
-        Assert.Equal(6, entries[@"archive\folder\file-4.txt"]);
+        Assert.Contains("archive" + separator + "folder" + separator + "file-1.txt", entries as IReadOnlyDictionary<string, int>);
+        Assert.Contains("archive" + separator + "folder" + separator + "file-2.txt", entries as IReadOnlyDictionary<string, int>);
+        Assert.Contains("archive" + separator + "folder" + separator + "file-3.txt", entries as IReadOnlyDictionary<string, int>);
+        Assert.Contains("archive" + separator + "folder" + separator + "file-4.txt", entries as IReadOnlyDictionary<string, int>);
+        Assert.Contains("archive" + separator + "file-1.txt", entries as IReadOnlyDictionary<string, int>);
+        Assert.Equal(11, entries["archive" + separator + "file-1.txt"]);
+        Assert.Equal(6, entries["archive" + separator + "folder" + separator + "file-1.txt"]);
+        Assert.Equal(6, entries["archive" + separator + "folder" + separator + "file-2.txt"]);
+        Assert.Equal(6, entries["archive" + separator + "folder" + separator + "file-3.txt"]);
+        Assert.Equal(6, entries["archive" + separator + "folder" + separator + "file-4.txt"]);
     }
 }
 #endif // NET6_0_OR_GREATER

@@ -1,24 +1,58 @@
 ﻿using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using SevenZip;
 using SevenZip.Extensions;
 using Xunit;
 
 namespace SevenZipTests;
 
+// All test classes are put into the same collection so that no two tests
+// run in parallel, since they all act on files in the shared working
+// directory.
+[Collection("SevenZip")]
 public class ArchiveReaderTests
 {
     [Fact]
     public void ExtractZipArchiveWithInsecurePath()
     {
-        Assert.Throws<IOException>(() =>
-        {
-            using var reader = new ArchiveReader(
-                "test-data/absolute-path-traversal.zip",
-                new Detail.ZipPathTraversalArchiveReaderDelegate());
+        // The entry path of the checked-in archive is absolute on Windows
+        // (C:C:/Windows/Temp/foo). The notation of an absolute path is platform
+        // specific, so on other platforms an archive is created on the fly with
+        // an entry path which is absolute on the current platform.
+        var archivePath = "test-data/absolute-path-traversal.zip";
 
-            reader.ExtractAll("result-zip-path-traversal");
-        });
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) is false)
+        {
+            archivePath = "generated-absolute-path-traversal.zip";
+
+            using (var writer = new ArchiveWriter(ArchiveFormat.Zip, archivePath))
+            {
+                writer.AddFile("/Windows/Temp/foo", new MemoryStream([1, 2, 3]), leaveOpen: false);
+                writer.Compress();
+            }
+        }
+
+        try
+        {
+            Assert.Throws<IOException>(() =>
+            {
+                using var reader = new ArchiveReader(
+                    archivePath,
+                    new Detail.ZipPathTraversalArchiveReaderDelegate());
+
+                reader.ExtractAll("result-zip-path-traversal");
+            });
+        }
+        finally
+        {
+            if (archivePath != "test-data/absolute-path-traversal.zip" && File.Exists(archivePath))
+            {
+                File.Delete(archivePath);
+            }
+
+            DeleteDirectory("result-zip-path-traversal");
+        }
     }
 
     [Fact]

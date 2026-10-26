@@ -24,6 +24,20 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IExtractConte
     private bool _disposed;
 
     /// <summary>
+    /// Gets the <see cref="ArchiveOperationException"/> which was raised while an
+    /// <see cref="IArchiveExtractCallback"/> callback was invoked, or <c>null</c>, if no
+    /// operation error occurred.
+    ///
+    /// On some platforms (e.g. Linux), an exception thrown from such a callback is not
+    /// propagated to the managed caller of the P/Invoke call. Instead, the native layer
+    /// swallows it and reports the exception's <see cref="Exception.HResult"/> as the
+    /// return value of the P/Invoke call. The exception is stored here so that the caller
+    /// of the P/Invoke can re-throw it, keeping the error behavior consistent across
+    /// platforms.
+    /// </summary>
+    internal ArchiveOperationException OperationError { get; private set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ExtractContext"/> class.
     /// </summary>
     /// <param name="reader">The archive to work with.</param>
@@ -213,7 +227,13 @@ internal sealed partial class ExtractContext : MarshalByRefObject, IExtractConte
                         _ => $"The '{_operation}' operation failed: {result}",
                     };
 
-                    throw new ArchiveOperationException(message, result, currentArchiveEntry);
+                    var exception = new ArchiveOperationException(message, result, currentArchiveEntry);
+
+                    // Remember the exception in case it gets swallowed by the native layer
+                    // and is only reported back as the return value of the P/Invoke call.
+                    context.OperationError ??= exception;
+
+                    throw exception;
                 }
             }
             finally
