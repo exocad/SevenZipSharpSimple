@@ -2,5 +2,7 @@
 	<ItemGroup>
 		<None Include="$(MSBuildThisFileDirectory)runtimes\win-x64\native\7z.dll" Link="7z.dll" CopyToOutputDirectory="PreserveNewest" />
 		<None Include="$(MSBuildThisFileDirectory)runtimes\linux-x64\native\7z.so" Link="7z.so" CopyToOutputDirectory="PreserveNewest" />
+		<None Include="$(MSBuildThisFileDirectory)runtimes\osx-arm64\native\lib7z.dylib" Link="lib7z.dylib" CopyToOutputDirectory="PreserveNewest"
+			Condition="Exists('$(MSBuildThisFileDirectory)runtimes\osx-arm64\native\lib7z.dylib')" />
 	</ItemGroup>
 </Project>

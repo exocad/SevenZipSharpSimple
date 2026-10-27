@@ -11,7 +11,8 @@ public sealed class ArchiveConfig
     /// <summary>
     /// Initializes a new instance of the <see cref="ArchiveConfig"/> class. This constructor
     /// set the <see cref="Password"/> to <c>null</c> and the <see cref="NativeLibraryPath"/>
-    /// to <c>7z.dll</c>.
+    /// to the platform dependent default (<c>7z.dll</c> on Windows, <c>7z.so</c> on Linux,
+    /// <c>lib7z.dylib</c> on macOS).
     /// </summary>
     public ArchiveConfig() { }
 
@@ -27,7 +28,8 @@ public sealed class ArchiveConfig
     /// </param>
     /// <param name="nativeLibraryPath">
     /// The native library path. If empty or <c>null</c>, <see cref="NativeLibraryPath"/>
-    /// will be set to <c>7z.dll</c>.
+    /// will be set to the platform dependent default (<c>7z.dll</c> on Windows,
+    /// <c>7z.so</c> on Linux, <c>lib7z.dylib</c> on macOS).
     /// </param>
     public ArchiveConfig(string password, bool ignoreOperationErrors, string nativeLibraryPath = null)
         : this(password, nativeLibraryPath)
@@ -40,7 +42,8 @@ public sealed class ArchiveConfig
     /// </summary>
     /// <param name="password">The password to set.</param>
     /// <param name="nativeLibraryPath">The native library path. If empty or <c>null</c>,
-    /// <see cref="NativeLibraryPath"/> will be set to <c>7z.dll</c>.</param>
+    /// <see cref="NativeLibraryPath"/> will be set to the platform dependent default
+    /// (<c>7z.dll</c> on Windows, <c>7z.so</c> on Linux, <c>lib7z.dylib</c> on macOS).</param>
     public ArchiveConfig(string password, string nativeLibraryPath = null)
     {
         Password = password;
@@ -134,6 +137,11 @@ public sealed class ArchiveConfig
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
             return "7z.so";
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            return "lib7z.dylib";
         }
 
         throw new System.PlatformNotSupportedException();

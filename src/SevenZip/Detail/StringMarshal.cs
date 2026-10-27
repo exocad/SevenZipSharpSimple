@@ -23,7 +23,7 @@ namespace SevenZip.Detail;
 /// <para>
 ///     The per character width is 16 bit when using MSVC, while other compilers and linux
 ///     use 32 bit. Currently, this implementation always assumes 16 bit on Windows and 32
-///     bit on Linux.
+///     bit on Linux and macOS.
 /// </para>
 /// 
 /// <para>
@@ -61,7 +61,7 @@ internal static class StringMarshal
             return Marshal.PtrToStringBSTR(ptr);
         }
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             var length = Unsafe.Subtract(
                 ref Unsafe.AsRef<uint>(ptr.ToPointer()), 
@@ -101,7 +101,7 @@ internal static class StringMarshal
         }
 
 #if NET6_0_OR_GREATER
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             var length = Encoding.UTF32.GetByteCount(value);
             var nativeMemoryLength = 4 + length + 4;

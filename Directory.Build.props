@@ -16,6 +16,13 @@
     <Platforms>x64</Platforms>
     <TargetFrameworks>net10.0;net8.0;net48</TargetFrameworks>
 
+    <!-- The .NET SDK maps Platform=x64 to PlatformTarget=x64, which stamps the IL as AMD64.
+         Such assemblies cannot be loaded by non-x64 runtimes (for example on Apple Silicon).
+         Force AnyCPU on non-Windows, non-x64 platforms; Windows builds stay on x64 as before.
+         x64 platforms keep PlatformTarget=x64, because vstest (dotnet test) does not
+         accept anycpu as a platform type. -->
+    <PlatformTarget Condition="!$([MSBuild]::IsOSPlatform('Windows')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' != 'X64'">anycpu</PlatformTarget>
+
     <UseArtifactsOutput>true</UseArtifactsOutput>
   </PropertyGroup>
 </Project>
